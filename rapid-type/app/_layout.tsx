@@ -69,6 +69,26 @@ export default function RootLayout() {
             animation: "slide_from_bottom",
           }}
         />
+        <Stack.Screen
+          name="tutorial"
+          options={{
+            presentation: "modal",
+            animation: "fade",
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
+          name="stats"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
+        <Stack.Screen
+          name="achievements"
+          options={{
+            animation: "slide_from_right",
+          }}
+        />
       </Stack>
     </SafeAreaProvider>
   );
