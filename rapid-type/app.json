@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Rapid Type",
+    "slug": "rapid-type",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "scheme": "rapid-type",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFDF5"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rapidtype.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFDF5"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.rapidtype.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
