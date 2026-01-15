@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Level Clear Results - Light Mode</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        "bg-soft": "#F4F5F7", // Very soft lavender-gray
+                        "primary-blue": "#007AFF", // iOS Clear Sky Blue
+                        "secondary-silver": "#E5E7EB", // Soft silver
+                        "charcoal": "#1C1C1E", // Deep charcoal for readability
+                        "friendly-orange": "#FF9500", // Bold, friendly orange-yellow
+                        "teal-accent": "#2DD4BF",
+                    },
+                    fontFamily: {
+                        "sans": ["'Plus Jakarta Sans'", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "ios": "1.25rem",
+                    }
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer base {
+            body {
+                @apply bg-bg-soft text-charcoal font-sans antialiased;
+                -webkit-font-smoothing: antialiased;
+            }
+        }
+        .stats-card {
+            @apply bg-white border border-gray-200/50 shadow-sm;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="flex flex-col min-h-screen max-w-md mx-auto relative overflow-x-hidden">
+<header class="flex items-center justify-between p-6">
+<button class="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm border border-gray-100 text-charcoal active:scale-95 transition-transform">
+<span class="material-symbols-outlined">close</span>
+</button>
+<span class="uppercase tracking-widest text-[11px] font-bold text-charcoal/40">Stage 08 Cleared</span>
+<div class="w-10"></div>
+</header>
+<main class="flex-1 flex flex-col px-6">
+<div class="text-center mt-4">
+<h1 class="text-6xl font-extrabold tracking-tight text-friendly-orange drop-shadow-sm mb-2">CLEAR!</h1>
+<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-blue/10 rounded-full">
+<span class="material-symbols-outlined text-primary-blue text-sm">stars</span>
+<span class="text-xs font-bold text-primary-blue uppercase tracking-wider">Excellent Performance</span>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center my-10 py-6">
+<span class="text-charcoal/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">Final Time</span>
+<span class="text-7xl font-extrabold text-charcoal tabular-nums tracking-tighter">00:15.32</span>
+</div>
+<div class="grid grid-cols-3 gap-4 mb-8">
+<div class="stats-card p-4 rounded-ios flex flex-col items-center justify-center text-center">
+<span class="text-[10px] font-bold text-charcoal/40 uppercase mb-2">Record</span>
+<span class="text-sm font-bold text-friendly-orange">New Best!</span>
+<span class="text-[9px] text-charcoal/30 mt-1">-0.42s</span>
+</div>
+<div class="stats-card p-4 rounded-ios flex flex-col items-center justify-center text-center">
+<span class="text-[10px] font-bold text-charcoal/40 uppercase mb-2">Accuracy</span>
+<span class="text-2xl font-bold text-charcoal">98%</span>
+</div>
+<div class="stats-card p-4 rounded-ios flex flex-col items-center justify-center text-center">
+<span class="text-[10px] font-bold text-charcoal/40 uppercase mb-2">Rank</span>
+<span class="text-3xl font-extrabold text-primary-blue">S</span>
+</div>
+</div>
+<div class="stats-card p-6 rounded-ios mb-8">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h3 class="text-sm font-bold text-charcoal">Tap Consistency</h3>
+<p class="text-[10px] text-charcoal/40">Performance stability profile</p>
+</div>
+<div class="text-right">
+<span class="text-2xl font-extrabold text-teal-accent">7.4</span>
+<span class="text-[10px] font-bold text-charcoal/40 uppercase block">TPS</span>
+</div>
+</div>
+<div class="h-28 w-full relative">
+<svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 400 100">
+<defs>
+<linearGradient id="graphGrad" x1="0" x2="1" y1="0" y2="0">
+<stop offset="0%" stop-color="#2DD4BF"></stop>
+<stop offset="100%" stop-color="#007AFF"></stop>
+</linearGradient>
+<linearGradient id="fillGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#007AFF" stop-opacity="0.1"></stop>
+<stop offset="100%" stop-color="#007AFF" stop-opacity="0"></stop>
+</linearGradient>
+</defs>
+<path d="M0,80 Q50,20 100,50 T200,30 T300,70 T400,10" fill="none" stroke="url(#graphGrad)" stroke-linecap="round" stroke-width="4"></path>
+<path d="M0,80 Q50,20 100,50 T200,30 T300,70 T400,10 V100 H0 Z" fill="url(#fillGrad)"></path>
+</svg>
+<div class="flex justify-between mt-3">
+<span class="text-[9px] font-bold text-charcoal/20 uppercase tracking-widest">Start</span>
+<span class="text-[9px] font-bold text-charcoal/20 uppercase tracking-widest">Finish</span>
+</div>
+</div>
+</div>
+</main>
+<footer class="p-6 pb-10 space-y-4">
+<div class="flex gap-4">
+<button class="flex-1 bg-secondary-silver hover:bg-gray-300 active:scale-95 h-16 rounded-ios font-bold text-charcoal flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-xl">refresh</span>
+                Retry
+            </button>
+<button class="flex-[1.8] bg-primary-blue hover:brightness-110 active:scale-95 h-16 rounded-ios font-bold text-white flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary-blue/20">
+                Next Level
+                <span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+</div>
+<button class="w-full py-4 text-charcoal/50 font-semibold text-sm flex items-center justify-center gap-2 active:text-charcoal transition-colors">
+<span class="material-symbols-outlined text-lg">share</span>
+            Share Results
+        </button>
+</footer>
+
+</body></html>
