@@ -17,7 +17,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { useStore } from "../../src/store";
-import { useGameLogic, useStopwatch, useHaptics } from "../../src/hooks";
+import { useGameLogic, useStopwatch, useHaptics, useSounds } from "../../src/hooks";
 import { Colors, ModeInfo } from "../../src/constants";
 import { formatTime, createGameResult } from "../../src/lib";
 import { t } from "../../src/i18n";
@@ -108,6 +108,7 @@ const TargetDisplay = ({
   currentIndex: number;
   isDarkMode: boolean;
 }) => {
+  // Sentence mode - show sentence with progress
   if (mode === "SENTENCE" && sentence) {
     const chars = sentence.split("");
     return (
@@ -155,6 +156,40 @@ const TargetDisplay = ({
     );
   }
 
+  // Find Number mode - large prominent target display
+  if (mode === "FIND_NUMBER") {
+    return (
+      <View className="items-center">
+        <Text
+          className="text-[10px] font-black uppercase tracking-widest mb-3"
+          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
+        >
+          {t("game.findThis")}
+        </Text>
+        <View
+          className="w-28 h-28 rounded-3xl items-center justify-center"
+          style={{
+            backgroundColor: Colors.primary.default,
+            shadowColor: Colors.primary.default,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.4,
+            shadowRadius: 16,
+            elevation: 8,
+          }}
+        >
+          <Text className="text-white text-6xl font-black">{currentTarget}</Text>
+        </View>
+        <Text
+          className="text-xs font-bold mt-3"
+          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
+        >
+          🔍 {t("game.searchGrid")}
+        </Text>
+      </View>
+    );
+  }
+
+  // Default mode (Numbers, Alphabet) - compact target display
   return (
     <View
       className="p-4 pr-6 rounded-[2rem] flex-row items-center gap-5"
@@ -213,6 +248,7 @@ const CountdownOverlay = ({
   onComplete: () => void;
 }) => {
   const { countdownTick } = useHaptics();
+  const sounds = useSounds();
   const [currentCount, setCurrentCount] = useState(count);
   const scale = useSharedValue(1);
 
@@ -223,6 +259,7 @@ const CountdownOverlay = ({
     }
 
     countdownTick();
+    sounds.playCountdown();
     scale.value = withSequence(
       withSpring(1.2, { damping: 8, stiffness: 400 }),
       withSpring(1, { damping: 12, stiffness: 200 })
@@ -285,7 +322,8 @@ export default function GameScreen() {
   } = useGameLogic(mode, difficulty);
 
   const { timeMs, isRunning, start, stop, reset } = useStopwatch();
-  const { errorFeedback, correctFeedback } = useHaptics();
+  const { tapWrong, tapCorrect } = useHaptics();
+  const sounds = useSounds();
 
   // Enhanced tile press handler with animations
   const handleTilePress = useCallback(
@@ -295,7 +333,8 @@ export default function GameScreen() {
       if (isCorrect) {
         // Correct tap
         setCorrectTileId(tile.id);
-        correctFeedback();
+        tapCorrect();
+        sounds.playCorrect();
         setTimeout(() => setCorrectTileId(null), 300);
       } else {
         // Error tap - trigger all feedback
@@ -303,7 +342,8 @@ export default function GameScreen() {
         setShowVignette(true);
         setTimerHasError(true);
         setPenaltyTotal((prev) => prev + PENALTY_TIME);
-        errorFeedback();
+        tapWrong();
+        sounds.playMiss();
 
         // Get tap position for penalty popup
         // Since we can't get exact position, use center of screen
@@ -323,7 +363,7 @@ export default function GameScreen() {
 
       originalHandleTilePress(tile);
     },
-    [session.currentTargetIndex, originalHandleTilePress, correctFeedback, errorFeedback]
+    [session.currentTargetIndex, originalHandleTilePress, tapCorrect, tapWrong, sounds]
   );
 
   // Handle countdown complete
@@ -331,7 +371,8 @@ export default function GameScreen() {
     setShowCountdown(false);
     startGame();
     start();
-  }, [startGame, start]);
+    sounds.playGameStart();
+  }, [startGame, start, sounds]);
 
   // Handle game finish
   useEffect(() => {
@@ -352,6 +393,9 @@ export default function GameScreen() {
 
       if (result.isNewRecord) {
         setHighScore(mode, difficulty, totalTimeWithPenalty);
+        sounds.playNewRecord();
+      } else {
+        sounds.playGameClear();
       }
 
       router.replace({
@@ -359,7 +403,7 @@ export default function GameScreen() {
         params: { result: JSON.stringify(result) },
       });
     }
-  }, [session.status, timeMs, penaltyTotal, mode, difficulty, session, getHighScore, setHighScore, stop]);
+  }, [session.status, timeMs, penaltyTotal, mode, difficulty, session, getHighScore, setHighScore, stop, sounds]);
 
   // Handle pause
   const handlePause = () => {

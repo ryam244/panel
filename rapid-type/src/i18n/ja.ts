@@ -1,5 +1,5 @@
 /**
- * Japanese translations
+ * Japanese translations - Mojic
  */
 
 export const ja = {
@@ -56,12 +56,35 @@ export const ja = {
     currentSentence: "お題",
     category: "カテゴリ",
     proverb: "ことわざ",
+    target: "ターゲット",
+    find: "探す",
+    findThis: "この数字を探せ",
+    searchGrid: "グリッドを探そう",
   },
 
   // Countdown
   countdown: {
     ready: "準備は？",
     go: "スタート！",
+  },
+
+  // Pause Screen
+  pause: {
+    title: "一時停止",
+    subtitle: "ちょっと休憩",
+    time: "タイム",
+    progress: "進捗",
+    resume: "再開する",
+    restart: "やり直す",
+    quit: "ゲームを終了",
+  },
+
+  // Exit Confirm Dialog
+  exitConfirm: {
+    title: "ゲームを終了しますか？",
+    message: "進行状況は保存されません。本当に終了しますか？",
+    cancel: "キャンセル",
+    confirm: "終了する",
   },
 
   // Result Screen
@@ -83,6 +106,8 @@ export const ja = {
     share: "結果をシェア",
     home: "ホーム",
     penalty: "ペナルティ",
+    mistakes: "ミス",
+    noPenalty: "ペナルティなし",
   },
 
   // Settings
@@ -95,6 +120,8 @@ export const ja = {
     soundDesc: "タップやクリア時に音を再生",
     haptics: "振動フィードバック",
     hapticsDesc: "タップやイベント時に振動",
+    language: "言語",
+    languageDesc: "アプリの言語を選択",
     statistics: "統計",
     gamesPlayed: "プレイ回数",
     totalPlayTime: "総プレイ時間",
@@ -102,6 +129,64 @@ export const ja = {
     longestStreak: "最長連続記録",
     days: "日",
     version: "バージョン",
+  },
+
+  // Statistics Screen
+  stats: {
+    title: "統計",
+    overview: "概要",
+    bestTimes: "ベストタイム",
+    noRecords: "まだ記録がありません",
+    playToRecord: "ゲームをプレイして記録を作ろう！",
+    totalGames: "総プレイ数",
+    avgTime: "平均タイム",
+    avgAccuracy: "平均正確性",
+    history: "最近の履歴",
+  },
+
+  // Achievements
+  achievements: {
+    title: "実績",
+    unlocked: "解除済み",
+    locked: "未解除",
+    progress: "進捗",
+    // Achievement names
+    firstClear: "はじめの一歩",
+    firstClearDesc: "最初のゲームをクリア",
+    speedDemon: "スピードスター",
+    speedDemonDesc: "数字モードを10秒以内にクリア",
+    perfectionist: "パーフェクト",
+    perfectionistDesc: "正確性100%でクリア",
+    marathoner: "マラソンランナー",
+    marathonerDesc: "100回プレイ",
+    weekStreak: "一週間の戦士",
+    weekStreakDesc: "7日連続でプレイ",
+    monthStreak: "一ヶ月の達人",
+    monthStreakDesc: "30日連続でプレイ",
+    numberMaster: "数字マスター",
+    numberMasterDesc: "数字モード・難しいをクリア",
+    alphabetMaster: "アルファベットマスター",
+    alphabetMasterDesc: "アルファベットモード・難しいをクリア",
+    sentenceMaster: "文章マスター",
+    sentenceMasterDesc: "文章モードを50回クリア",
+    noMistake: "ノーミス",
+    noMistakeDesc: "ミスなしで10回クリア",
+  },
+
+  // Tutorial
+  tutorial: {
+    skip: "スキップ",
+    next: "次へ",
+    done: "始める！",
+    // Slides
+    slide1Title: "Mojicへようこそ！",
+    slide1Desc: "反射神経とパターン認識を鍛えよう",
+    slide2Title: "順番にタップ",
+    slide2Desc: "数字や文字を正しい順番で見つけてタップ",
+    slide3Title: "速さが大事",
+    slide3Desc: "早くクリアするほど良いランクに！",
+    slide4Title: "ミスに注意",
+    slide4Desc: "間違えるとペナルティタイムが追加。集中！",
   },
 
   // Errors & Feedback
@@ -116,5 +201,20 @@ export const ja = {
     hours: "時間",
     minutes: "分",
     seconds: "秒",
+  },
+
+  // Empty states
+  empty: {
+    noScores: "まだスコアがありません",
+    playFirst: "まずはゲームをプレイしよう！",
+    noAchievements: "まだ実績がありません",
+    keepPlaying: "プレイを続けて実績を解除しよう！",
+  },
+
+  // Ads
+  ads: {
+    watchAd: "広告を見る",
+    getBonus: "ボーナスをもらう",
+    noThanks: "今はいい",
   },
 };

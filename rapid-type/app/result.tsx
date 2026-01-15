@@ -3,10 +3,11 @@
  * Shows game results with stats and actions
  */
 
+import { useEffect, useRef } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
-import { useStore } from "../src/store";
+import { useStore, ACHIEVEMENT_IDS } from "../src/store";
 import { Colors } from "../src/constants";
 import { formatTime, formatTimeDiff } from "../src/lib";
 import type { GameResult } from "../src/types";
@@ -88,6 +89,13 @@ export default function ResultScreen() {
   const incrementGamesPlayed = useStore((state) => state.incrementGamesPlayed);
   const addPlayTime = useStore((state) => state.addPlayTime);
   const updateStreak = useStore((state) => state.updateStreak);
+  const addGameHistory = useStore((state) => state.addGameHistory);
+  const unlockAchievement = useStore((state) => state.unlockAchievement);
+  const updateAchievementProgress = useStore((state) => state.updateAchievementProgress);
+  const stats = useStore((state) => state.stats);
+  const achievements = useStore((state) => state.achievements);
+
+  const hasProcessed = useRef(false);
 
   // Parse result
   let result: GameResult | null = null;
@@ -96,6 +104,88 @@ export default function ResultScreen() {
   } catch (e) {
     console.error("Failed to parse result:", e);
   }
+
+  // Process game result and achievements
+  useEffect(() => {
+    if (!result || hasProcessed.current) return;
+    hasProcessed.current = true;
+
+    // Update stats
+    incrementGamesPlayed();
+    addPlayTime(result.clearTime);
+    updateStreak();
+
+    // Save to history
+    addGameHistory({
+      mode: result.mode,
+      difficulty: result.difficulty,
+      clearTime: result.clearTime,
+      accuracy: result.accuracy,
+      rank: result.rank,
+      date: result.date,
+    });
+
+    // Check achievements
+    checkAchievements(result);
+  }, [result]);
+
+  // Achievement checking logic
+  const checkAchievements = (gameResult: GameResult) => {
+    // First Clear - Complete your first game
+    unlockAchievement(ACHIEVEMENT_IDS.FIRST_CLEAR);
+
+    // Perfectionist - 100% accuracy
+    if (gameResult.accuracy >= 100) {
+      unlockAchievement(ACHIEVEMENT_IDS.PERFECTIONIST);
+    }
+
+    // Speed Demon - Numbers under 10s
+    if (gameResult.mode === "NUMBERS" && gameResult.clearTime < 10000) {
+      unlockAchievement(ACHIEVEMENT_IDS.SPEED_DEMON);
+    }
+
+    // Number Master - Clear Numbers Hard
+    if (gameResult.mode === "NUMBERS" && gameResult.difficulty === "HARD") {
+      unlockAchievement(ACHIEVEMENT_IDS.NUMBER_MASTER);
+    }
+
+    // Alphabet Master - Clear Alphabet Hard
+    if (gameResult.mode === "ALPHABET" && gameResult.difficulty === "HARD") {
+      unlockAchievement(ACHIEVEMENT_IDS.ALPHABET_MASTER);
+    }
+
+    // Find Master - Clear Find Number Hard
+    if (gameResult.mode === "FIND_NUMBER" && gameResult.difficulty === "HARD") {
+      unlockAchievement(ACHIEVEMENT_IDS.FIND_MASTER);
+    }
+
+    // Marathoner - Play 100 games (progress)
+    const gamesPlayed = stats.totalGamesPlayed + 1;
+    updateAchievementProgress(ACHIEVEMENT_IDS.MARATHONER, gamesPlayed);
+
+    // Sentence Master - Clear 50 Sentence games (progress)
+    if (gameResult.mode === "SENTENCE") {
+      const sentenceProgress = (achievements[ACHIEVEMENT_IDS.SENTENCE_MASTER]?.progress || 0) + 1;
+      updateAchievementProgress(ACHIEVEMENT_IDS.SENTENCE_MASTER, sentenceProgress);
+    }
+
+    // No Mistake - 10 perfect games (progress)
+    if (gameResult.accuracy >= 100) {
+      const noMistakeProgress = (achievements[ACHIEVEMENT_IDS.NO_MISTAKE]?.progress || 0) + 1;
+      updateAchievementProgress(ACHIEVEMENT_IDS.NO_MISTAKE, noMistakeProgress);
+    }
+
+    // Week/Month Streak - based on current streak
+    const currentStreak = stats.currentStreak;
+    updateAchievementProgress(ACHIEVEMENT_IDS.WEEK_STREAK, currentStreak);
+    updateAchievementProgress(ACHIEVEMENT_IDS.MONTH_STREAK, currentStreak);
+
+    // Speed King - Get S rank 10 times
+    if (gameResult.rank === "S") {
+      const speedKingProgress = (achievements[ACHIEVEMENT_IDS.SPEED_KING]?.progress || 0) + 1;
+      updateAchievementProgress(ACHIEVEMENT_IDS.SPEED_KING, speedKingProgress);
+    }
+  };
 
   if (!result) {
     return (
@@ -110,14 +200,6 @@ export default function ResultScreen() {
       </SafeAreaView>
     );
   }
-
-  // Update stats on mount
-  // useEffect would be better but keeping it simple
-  const updateStats = () => {
-    incrementGamesPlayed();
-    addPlayTime(result!.clearTime);
-    updateStreak();
-  };
 
   // Handle retry
   const handleRetry = () => {

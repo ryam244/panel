@@ -14,7 +14,7 @@ import Animated, {
   interpolateColor,
 } from "react-native-reanimated";
 import { useEffect } from "react";
-import { Colors, TextStyles, Spacing } from "../../constants";
+import { Colors, TextStyles, BorderRadius } from "../../constants";
 import type { Tile } from "../../types";
 
 interface ShakeTileProps {
@@ -142,7 +142,7 @@ export const ShakeTile = ({
 
 const styles = StyleSheet.create({
   tile: {
-    borderRadius: Spacing.md,
+    borderRadius: BorderRadius.tile,
     borderWidth: 2,
     borderColor: Colors.border.default,
     alignItems: "center",
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
     shadowColor: Colors.neumorphic.dark.shadowDark,
   },
   clearedTile: {
-    borderRadius: Spacing.md,
+    borderRadius: BorderRadius.tile,
     backgroundColor: "transparent",
   },
 });

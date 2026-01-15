@@ -3,11 +3,12 @@
  * Main entry point with game mode cards and navigation
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useStore } from "../src/store";
+import { useSounds } from "../src/hooks";
 import { Colors, ModeInfo, DifficultyInfo } from "../src/constants";
 import { t, isJapanese } from "../src/i18n";
 import type { GameMode, Difficulty } from "../src/types";
@@ -268,8 +269,15 @@ export default function HomeScreen() {
   const [selectedMode, setSelectedMode] = useState<GameMode>("NUMBERS");
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("NORMAL");
   const isDarkMode = useStore((state) => state.settings.isDarkMode);
+  const sounds = useSounds();
+
+  // Preload sounds on app start
+  useEffect(() => {
+    sounds.preload();
+  }, []);
 
   const handleStartGame = () => {
+    sounds.playButtonTap();
     router.push({
       pathname: "/game/[mode]",
       params: {
@@ -279,8 +287,8 @@ export default function HomeScreen() {
     });
   };
 
-  // MVP: Only show 3 modes
-  const mvpModes: GameMode[] = ["NUMBERS", "ALPHABET", "SENTENCE"];
+  // MVP: Show 4 modes (including Find Number)
+  const mvpModes: GameMode[] = ["NUMBERS", "ALPHABET", "SENTENCE", "FIND_NUMBER"];
 
   return (
     <SafeAreaView
@@ -463,6 +471,10 @@ export default function HomeScreen() {
               onPress={() => {
                 if (item.label === t("home.settings")) {
                   router.push("/settings");
+                } else if (item.label === t("home.scores")) {
+                  router.push("/stats");
+                } else if (item.label === t("home.awards")) {
+                  router.push("/achievements");
                 }
               }}
             >

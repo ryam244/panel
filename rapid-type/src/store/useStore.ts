@@ -1,15 +1,15 @@
 /**
- * Zustand Store - Rapid Type
+ * Zustand Store - Mojic
  * Global state management with MMKV persistence
  */
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { MMKV } from "react-native-mmkv";
-import type { AppStore, GameMode, Difficulty, UserSettings, UserStats, HighScores } from "../types";
+import type { GameMode, Difficulty, UserSettings, UserStats, HighScores } from "../types";
 
 // MMKV instance
-const storage = new MMKV({ id: "rapid-type-store" });
+const storage = new MMKV({ id: "mojic-store" });
 
 // Custom storage adapter for Zustand
 const mmkvStorage = {
@@ -24,6 +24,70 @@ const mmkvStorage = {
     storage.delete(name);
   },
 };
+
+// Game History Entry
+export interface GameHistoryEntry {
+  id: string;
+  mode: GameMode;
+  difficulty: Difficulty;
+  clearTime: number;
+  accuracy: number;
+  rank: "S" | "A" | "B" | "C";
+  date: string;
+}
+
+// Achievement Definition
+export interface Achievement {
+  id: string;
+  unlocked: boolean;
+  unlockedAt?: string;
+  progress?: number;
+  maxProgress?: number;
+}
+
+// Extended Store Type
+export interface AppStore {
+  // Settings
+  settings: UserSettings;
+  setSettings: (settings: Partial<UserSettings>) => void;
+  toggleDarkMode: () => void;
+  toggleSound: () => void;
+  toggleHaptics: () => void;
+
+  // High Scores
+  highScores: HighScores;
+  getHighScore: (mode: GameMode, difficulty: Difficulty) => number | null;
+  setHighScore: (mode: GameMode, difficulty: Difficulty, time: number) => void;
+
+  // Stats
+  stats: UserStats;
+  incrementGamesPlayed: () => void;
+  addPlayTime: (ms: number) => void;
+  updateStreak: () => void;
+
+  // Tutorial
+  hasSeenTutorial: boolean;
+  setHasSeenTutorial: (seen: boolean) => void;
+
+  // Game History
+  gameHistory: GameHistoryEntry[];
+  addGameHistory: (entry: Omit<GameHistoryEntry, "id">) => void;
+  clearGameHistory: () => void;
+
+  // Achievements
+  achievements: Record<string, Achievement>;
+  unlockAchievement: (id: string) => void;
+  updateAchievementProgress: (id: string, progress: number) => void;
+  getAchievement: (id: string) => Achievement | undefined;
+
+  // Mode-specific stats
+  modeStats: Record<string, { gamesPlayed: number; totalTime: number; perfectGames: number }>;
+  updateModeStats: (mode: GameMode, difficulty: Difficulty, time: number, isPerfect: boolean) => void;
+
+  // Hydration
+  _hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
+}
 
 // Default values
 const defaultSettings: UserSettings = {
@@ -42,23 +106,57 @@ const defaultStats: UserStats = {
 
 const defaultHighScores: HighScores = {};
 
-// Helper to create high score key
+// Achievement IDs
+export const ACHIEVEMENT_IDS = {
+  FIRST_CLEAR: "first_clear",
+  SPEED_DEMON: "speed_demon",
+  PERFECTIONIST: "perfectionist",
+  MARATHONER: "marathoner",
+  WEEK_STREAK: "week_streak",
+  MONTH_STREAK: "month_streak",
+  NUMBER_MASTER: "number_master",
+  ALPHABET_MASTER: "alphabet_master",
+  SENTENCE_MASTER: "sentence_master",
+  NO_MISTAKE: "no_mistake",
+  FIND_MASTER: "find_master",
+  SPEED_KING: "speed_king",
+} as const;
+
+// Default achievements
+const defaultAchievements: Record<string, Achievement> = {
+  [ACHIEVEMENT_IDS.FIRST_CLEAR]: { id: ACHIEVEMENT_IDS.FIRST_CLEAR, unlocked: false },
+  [ACHIEVEMENT_IDS.SPEED_DEMON]: { id: ACHIEVEMENT_IDS.SPEED_DEMON, unlocked: false },
+  [ACHIEVEMENT_IDS.PERFECTIONIST]: { id: ACHIEVEMENT_IDS.PERFECTIONIST, unlocked: false, progress: 0, maxProgress: 1 },
+  [ACHIEVEMENT_IDS.MARATHONER]: { id: ACHIEVEMENT_IDS.MARATHONER, unlocked: false, progress: 0, maxProgress: 100 },
+  [ACHIEVEMENT_IDS.WEEK_STREAK]: { id: ACHIEVEMENT_IDS.WEEK_STREAK, unlocked: false, progress: 0, maxProgress: 7 },
+  [ACHIEVEMENT_IDS.MONTH_STREAK]: { id: ACHIEVEMENT_IDS.MONTH_STREAK, unlocked: false, progress: 0, maxProgress: 30 },
+  [ACHIEVEMENT_IDS.NUMBER_MASTER]: { id: ACHIEVEMENT_IDS.NUMBER_MASTER, unlocked: false },
+  [ACHIEVEMENT_IDS.ALPHABET_MASTER]: { id: ACHIEVEMENT_IDS.ALPHABET_MASTER, unlocked: false },
+  [ACHIEVEMENT_IDS.SENTENCE_MASTER]: { id: ACHIEVEMENT_IDS.SENTENCE_MASTER, unlocked: false, progress: 0, maxProgress: 50 },
+  [ACHIEVEMENT_IDS.NO_MISTAKE]: { id: ACHIEVEMENT_IDS.NO_MISTAKE, unlocked: false, progress: 0, maxProgress: 10 },
+  [ACHIEVEMENT_IDS.FIND_MASTER]: { id: ACHIEVEMENT_IDS.FIND_MASTER, unlocked: false },
+  [ACHIEVEMENT_IDS.SPEED_KING]: { id: ACHIEVEMENT_IDS.SPEED_KING, unlocked: false, progress: 0, maxProgress: 10 },
+};
+
+// Helper functions
 const createHighScoreKey = (mode: GameMode, difficulty: Difficulty): string => {
   return `${mode}_${difficulty}`;
 };
 
-// Helper to check if same day
 const isSameDay = (date1: string, date2: string): boolean => {
   return date1.slice(0, 10) === date2.slice(0, 10);
 };
 
-// Helper to check if consecutive day
 const isConsecutiveDay = (lastDate: string, today: string): boolean => {
   const last = new Date(lastDate);
   const current = new Date(today);
   const diffTime = current.getTime() - last.getTime();
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
   return diffDays === 1;
+};
+
+const generateId = (): string => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
 };
 
 export const useStore = create<AppStore>()(
@@ -104,7 +202,6 @@ export const useStore = create<AppStore>()(
           const key = createHighScoreKey(mode, difficulty);
           const currentBest = state.highScores[key];
 
-          // Only update if new time is better (lower)
           if (currentBest === undefined || time < currentBest) {
             return {
               highScores: { ...state.highScores, [key]: time },
@@ -139,7 +236,6 @@ export const useStore = create<AppStore>()(
           const today = new Date().toISOString();
           const { lastPlayedDate, currentStreak, longestStreak } = state.stats;
 
-          // First play ever
           if (!lastPlayedDate) {
             return {
               stats: {
@@ -151,12 +247,10 @@ export const useStore = create<AppStore>()(
             };
           }
 
-          // Same day - no change
           if (isSameDay(lastPlayedDate, today)) {
             return state;
           }
 
-          // Consecutive day - increment streak
           if (isConsecutiveDay(lastPlayedDate, today)) {
             const newStreak = currentStreak + 1;
             return {
@@ -169,12 +263,98 @@ export const useStore = create<AppStore>()(
             };
           }
 
-          // Streak broken - reset to 1
           return {
             stats: {
               ...state.stats,
               currentStreak: 1,
               lastPlayedDate: today,
+            },
+          };
+        }),
+
+      // ===================
+      // TUTORIAL
+      // ===================
+      hasSeenTutorial: false,
+
+      setHasSeenTutorial: (seen) => set({ hasSeenTutorial: seen }),
+
+      // ===================
+      // GAME HISTORY
+      // ===================
+      gameHistory: [],
+
+      addGameHistory: (entry) =>
+        set((state) => ({
+          gameHistory: [
+            { ...entry, id: generateId() },
+            ...state.gameHistory.slice(0, 99), // Keep last 100
+          ],
+        })),
+
+      clearGameHistory: () => set({ gameHistory: [] }),
+
+      // ===================
+      // ACHIEVEMENTS
+      // ===================
+      achievements: defaultAchievements,
+
+      unlockAchievement: (id) =>
+        set((state) => {
+          if (state.achievements[id]?.unlocked) return state;
+          return {
+            achievements: {
+              ...state.achievements,
+              [id]: {
+                ...state.achievements[id],
+                unlocked: true,
+                unlockedAt: new Date().toISOString(),
+              },
+            },
+          };
+        }),
+
+      updateAchievementProgress: (id, progress) =>
+        set((state) => {
+          const achievement = state.achievements[id];
+          if (!achievement || achievement.unlocked) return state;
+
+          const newProgress = Math.min(progress, achievement.maxProgress || progress);
+          const shouldUnlock = achievement.maxProgress && newProgress >= achievement.maxProgress;
+
+          return {
+            achievements: {
+              ...state.achievements,
+              [id]: {
+                ...achievement,
+                progress: newProgress,
+                unlocked: shouldUnlock || achievement.unlocked,
+                unlockedAt: shouldUnlock ? new Date().toISOString() : achievement.unlockedAt,
+              },
+            },
+          };
+        }),
+
+      getAchievement: (id) => get().achievements[id],
+
+      // ===================
+      // MODE STATS
+      // ===================
+      modeStats: {},
+
+      updateModeStats: (mode, difficulty, time, isPerfect) =>
+        set((state) => {
+          const key = createHighScoreKey(mode, difficulty);
+          const current = state.modeStats[key] || { gamesPlayed: 0, totalTime: 0, perfectGames: 0 };
+
+          return {
+            modeStats: {
+              ...state.modeStats,
+              [key]: {
+                gamesPlayed: current.gamesPlayed + 1,
+                totalTime: current.totalTime + time,
+                perfectGames: isPerfect ? current.perfectGames + 1 : current.perfectGames,
+              },
             },
           };
         }),
@@ -187,7 +367,7 @@ export const useStore = create<AppStore>()(
       setHasHydrated: (state) => set({ _hasHydrated: state }),
     }),
     {
-      name: "rapid-type-storage",
+      name: "mojic-storage",
       storage: createJSONStorage(() => mmkvStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
