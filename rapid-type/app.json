@@ -1,36 +1,37 @@
 {
   "expo": {
-    "name": "Rapid Type",
-    "slug": "rapid-type",
+    "name": "Mojic",
+    "slug": "mojic",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "scheme": "rapid-type",
+    "scheme": "mojic",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#FFFDF5"
+      "backgroundColor": "#1E2A38"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rapidtype.app"
+      "bundleIdentifier": "com.mojic.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FFFDF5"
+        "backgroundColor": "#1E2A38"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.rapidtype.app"
+      "package": "com.mojic.app"
     },
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true

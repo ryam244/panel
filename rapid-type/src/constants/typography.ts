@@ -1,26 +1,44 @@
 /**
- * Typography System - Rapid Type
- * Font families, sizes, weights, and line heights.
+ * Typography System - Mojic
+ * High-visibility, rounded sans-serif fonts for eye comfort
+ *
+ * Design Principles:
+ * - Rounded, thick sans-serif for high visibility
+ * - Clear information hierarchy
+ * - Comfortable reading for extended play sessions
+ * - Japanese font with good readability
  */
 
 export const FontFamily = {
-  display: "Lexend",           // Headings, numbers, timers
-  body: "Plus Jakarta Sans",   // Body text, UI elements
-  japanese: "Noto Sans JP",    // Japanese text (Sentence mode)
-  system: "System",            // Fallback
+  // Primary display font - rounded, bold, highly visible
+  // Nunito: Rounded terminals, excellent for numbers
+  display: "Nunito",
+
+  // Body text - rounded, readable
+  body: "Nunito",
+
+  // Japanese text - rounded Gothic for readability
+  // Zen Maru Gothic: Rounded Japanese font
+  japanese: "Noto Sans JP",
+
+  // Monospace for timers (tabular numbers)
+  mono: "Lexend",
+
+  // System fallback
+  system: "System",
 } as const;
 
 export const FontSize = {
-  // Extra Small
+  // Extra Small - labels, hints
   xs: 10,
 
-  // Small
+  // Small - secondary info
   sm: 12,
 
-  // Base
+  // Base - body text
   base: 14,
 
-  // Large
+  // Large - emphasized body
   lg: 16,
   xl: 18,
 
@@ -28,9 +46,15 @@ export const FontSize = {
   "2xl": 20,
   "3xl": 24,
   "4xl": 32,
+
+  // Display sizes
   "5xl": 44,
   "6xl": 56,
   "7xl": 72,
+
+  // Extra large for tiles
+  tile: 36,
+  tileLarge: 48,
 } as const;
 
 export const FontWeight = {
@@ -57,14 +81,14 @@ export const LetterSpacing = {
   wide: 0.025,
   wider: 0.05,
   widest: 0.1,
-  tracking: 0.2,  // UPPERCASE tracking
+  tracking: 0.15,  // UPPERCASE tracking
 } as const;
 
-// Pre-defined text styles
+// Pre-defined text styles for consistency
 export const TextStyles = {
-  // Timer display
+  // Timer display - large, clear, monospace
   timer: {
-    fontFamily: FontFamily.display,
+    fontFamily: FontFamily.mono,
     fontSize: FontSize["3xl"],
     fontWeight: FontWeight.extrabold,
     letterSpacing: LetterSpacing.tight,
@@ -72,17 +96,17 @@ export const TextStyles = {
 
   // Large timer (result screen)
   timerLarge: {
-    fontFamily: FontFamily.display,
-    fontSize: FontSize["7xl"],
-    fontWeight: FontWeight.extrabold,
+    fontFamily: FontFamily.mono,
+    fontSize: FontSize["6xl"],
+    fontWeight: FontWeight.black,
     letterSpacing: LetterSpacing.tighter,
   },
 
-  // Page title
+  // App title
   title: {
     fontFamily: FontFamily.display,
     fontSize: FontSize["5xl"],
-    fontWeight: FontWeight.bold,
+    fontWeight: FontWeight.black,
     letterSpacing: LetterSpacing.tight,
   },
 
@@ -95,7 +119,7 @@ export const TextStyles = {
 
   // Card title
   cardTitle: {
-    fontFamily: FontFamily.body,
+    fontFamily: FontFamily.display,
     fontSize: FontSize.lg,
     fontWeight: FontWeight.bold,
   },
@@ -104,11 +128,11 @@ export const TextStyles = {
   body: {
     fontFamily: FontFamily.body,
     fontSize: FontSize.base,
-    fontWeight: FontWeight.normal,
+    fontWeight: FontWeight.medium,
     lineHeight: LineHeight.normal,
   },
 
-  // Small label
+  // Small label (uppercase)
   label: {
     fontFamily: FontFamily.display,
     fontSize: FontSize.xs,
@@ -117,26 +141,62 @@ export const TextStyles = {
     textTransform: "uppercase" as const,
   },
 
-  // Tile number
+  // Tile number - large, bold, highly visible
   tileNumber: {
     fontFamily: FontFamily.display,
-    fontSize: FontSize["4xl"],
-    fontWeight: FontWeight.extrabold,
+    fontSize: FontSize.tile,
+    fontWeight: FontWeight.black,
+  },
+
+  // Large tile number
+  tileNumberLarge: {
+    fontFamily: FontFamily.display,
+    fontSize: FontSize.tileLarge,
+    fontWeight: FontWeight.black,
   },
 
   // Japanese character
   japaneseChar: {
     fontFamily: FontFamily.japanese,
-    fontSize: FontSize["5xl"],
+    fontSize: FontSize["4xl"],
     fontWeight: FontWeight.black,
   },
 
   // Button text
   button: {
-    fontFamily: FontFamily.body,
+    fontFamily: FontFamily.display,
     fontSize: FontSize.xl,
     fontWeight: FontWeight.bold,
     letterSpacing: LetterSpacing.wide,
+  },
+
+  // Stats value (result screen)
+  statsValue: {
+    fontFamily: FontFamily.display,
+    fontSize: FontSize["2xl"],
+    fontWeight: FontWeight.extrabold,
+  },
+
+  // Stats label
+  statsLabel: {
+    fontFamily: FontFamily.display,
+    fontSize: FontSize.sm,
+    fontWeight: FontWeight.semibold,
+    letterSpacing: LetterSpacing.wide,
+  },
+
+  // Penalty text (floating +1.0s)
+  penalty: {
+    fontFamily: FontFamily.mono,
+    fontSize: FontSize.lg,
+    fontWeight: FontWeight.bold,
+  },
+
+  // Rank display (S, A, B, C)
+  rank: {
+    fontFamily: FontFamily.display,
+    fontSize: FontSize["4xl"],
+    fontWeight: FontWeight.black,
   },
 } as const;
 

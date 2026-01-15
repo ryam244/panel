@@ -1,93 +1,43 @@
 /**
- * Game Play Screen
+ * Game Play Screen - Mojic
  * Dynamic route for all game modes
+ * Features: Shake animation, vignette effect, penalty popup, timer flash
  */
 
-import { useEffect, useState, useCallback } from "react";
-import { View, Text, Pressable } from "react-native";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { View, Text, Pressable, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+  withSpring,
+  Easing,
+} from "react-native-reanimated";
 import { useStore } from "../../src/store";
 import { useGameLogic, useStopwatch, useHaptics } from "../../src/hooks";
-import { Colors, ModeInfo, GridConfigs } from "../../src/constants";
+import { Colors, ModeInfo } from "../../src/constants";
 import { formatTime, createGameResult } from "../../src/lib";
+import { t } from "../../src/i18n";
+import {
+  VignetteOverlay,
+  PenaltyPopup,
+  AnimatedTimer,
+  ShakeTile,
+} from "../../src/components/feedback";
 import type { GameMode, Difficulty, Tile } from "../../src/types";
 
-// Tile Cell Component
-const TileCell = ({
-  tile,
-  isTarget,
-  onPress,
-  size,
-  disabled,
-  mode,
-}: {
-  tile: Tile;
-  isTarget: boolean;
-  onPress: (tile: Tile) => void;
-  size: number;
-  disabled?: boolean;
-  mode: GameMode;
-}) => {
-  const isDarkMode = useStore((state) => state.settings.isDarkMode);
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-  if (tile.isCleared) {
-    return (
-      <View
-        style={{ width: size, height: size }}
-        className="rounded-2xl bg-panel-muted/50 opacity-25"
-      />
-    );
-  }
+// Constants
+const PENALTY_TIME = 1.0; // seconds
 
-  const isJapanese = mode === "SENTENCE";
+// Animated Pressable
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-  return (
-    <Pressable
-      onPress={() => !disabled && onPress(tile)}
-      disabled={disabled}
-      style={{ width: size, height: size }}
-      className={`
-        rounded-2xl items-center justify-center
-        ${isJapanese
-          ? "bg-bg-paper border-2 border-charcoal"
-          : isDarkMode
-            ? "bg-white/5 border border-white/10"
-            : "bg-panel-muted border border-ui-border"
-        }
-        ${isTarget ? "ring-2 ring-success ring-offset-2" : ""}
-        active:scale-90
-      `}
-      style={[
-        { width: size, height: size },
-        isJapanese && {
-          shadowColor: "#1A1C1E",
-          shadowOffset: { width: 4, height: 4 },
-          shadowOpacity: 1,
-          shadowRadius: 0,
-          elevation: 4,
-        },
-        !isJapanese && {
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.04,
-          shadowRadius: 4,
-          elevation: 2,
-        },
-      ]}
-    >
-      <Text
-        className={`font-extrabold ${
-          isJapanese ? "text-5xl" : "text-3xl"
-        } ${isDarkMode ? "text-white" : "text-navy"}`}
-      >
-        {tile.value}
-      </Text>
-    </Pressable>
-  );
-};
-
-// Grid Board Component
+// Grid Board Component with ShakeTile
 const GridBoard = ({
   tiles,
   gridConfig,
@@ -95,6 +45,9 @@ const GridBoard = ({
   onTilePress,
   disabled,
   mode,
+  errorTileId,
+  correctTileId,
+  isDarkMode,
 }: {
   tiles: Tile[];
   gridConfig: { rows: number; cols: number };
@@ -102,15 +55,16 @@ const GridBoard = ({
   onTilePress: (tile: Tile) => void;
   disabled?: boolean;
   mode: GameMode;
+  errorTileId: string | null;
+  correctTileId: string | null;
+  isDarkMode: boolean;
 }) => {
-  // Calculate tile size based on grid
-  const tileSize = mode === "SENTENCE" ? 80 : 70;
-  const gap = 14;
+  const isSentence = mode === "SENTENCE";
+  const tileSize = isSentence ? 80 : 70;
+  const gap = isSentence ? 16 : 14;
 
-  // Sort tiles by position for rendering
   const sortedTiles = [...tiles].sort((a, b) => a.position - b.position);
 
-  // Create grid rows
   const rows: Tile[][] = [];
   for (let i = 0; i < gridConfig.rows; i++) {
     rows.push(sortedTiles.slice(i * gridConfig.cols, (i + 1) * gridConfig.cols));
@@ -121,14 +75,17 @@ const GridBoard = ({
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} className="flex-row" style={{ gap }}>
           {row.map((tile) => (
-            <TileCell
+            <ShakeTile
               key={tile.id}
               tile={tile}
               isTarget={tile.orderIndex === currentTargetIndex && !tile.isCleared}
               onPress={onTilePress}
               size={tileSize}
               disabled={disabled}
-              mode={mode}
+              hasError={tile.id === errorTileId}
+              isCorrect={tile.id === correctTileId}
+              isDarkMode={isDarkMode}
+              mode={isSentence ? "sentence" : "numbers"}
             />
           ))}
         </View>
@@ -143,29 +100,52 @@ const TargetDisplay = ({
   currentTarget,
   sentence,
   currentIndex,
+  isDarkMode,
 }: {
   mode: GameMode;
   currentTarget: string;
   sentence?: string;
   currentIndex: number;
+  isDarkMode: boolean;
 }) => {
-  const isDarkMode = useStore((state) => state.settings.isDarkMode);
-
   if (mode === "SENTENCE" && sentence) {
-    // Show sentence with progress
     const chars = sentence.split("");
     return (
-      <View className="bg-panel-stone/40 border-2 border-accent-border rounded-2xl p-6 min-h-[120px] items-center justify-center">
-        <View className="absolute -top-3 left-6 bg-bg-paper px-3 py-0.5 border border-accent-border rounded-full">
-          <Text className="text-[10px] font-black uppercase tracking-tighter text-ink/50">
-            Current Sentence
+      <View
+        className="rounded-2xl p-6 min-h-[120px] items-center justify-center"
+        style={{
+          backgroundColor: Colors.background.stone + "66",
+          borderWidth: 2,
+          borderColor: Colors.border.accent,
+        }}
+      >
+        <View
+          className="absolute -top-3 left-6 px-3 py-0.5 rounded-full"
+          style={{
+            backgroundColor: Colors.background.paper,
+            borderWidth: 1,
+            borderColor: Colors.border.accent,
+          }}
+        >
+          <Text
+            className="text-[10px] font-black uppercase tracking-tighter"
+            style={{ color: Colors.text.muted }}
+          >
+            {t("game.currentSentence")}
           </Text>
         </View>
-        <Text className="text-4xl font-black tracking-[0.15em] leading-relaxed text-center">
+        <Text
+          className="text-4xl font-black tracking-[0.15em] leading-relaxed text-center"
+          style={{ color: Colors.text.primary }}
+        >
           {chars.map((char, i) => (
             <Text
               key={i}
-              className={i < currentIndex ? "text-charcoal" : "text-charcoal/20"}
+              style={{
+                color: i < currentIndex
+                  ? Colors.text.primary
+                  : Colors.text.muted + "40",
+              }}
             >
               {i < currentIndex ? char : "＿"}
             </Text>
@@ -177,10 +157,15 @@ const TargetDisplay = ({
 
   return (
     <View
-      className={`p-4 pr-6 rounded-[2rem] flex-row items-center gap-5 ${
-        isDarkMode ? "bg-white/5 border border-white/10" : "bg-panel-muted border border-ui-border"
-      }`}
+      className="p-4 pr-6 rounded-[2rem] flex-row items-center gap-5"
       style={{
+        backgroundColor: isDarkMode
+          ? "rgba(255, 255, 255, 0.05)"
+          : Colors.background.panel,
+        borderWidth: 1,
+        borderColor: isDarkMode
+          ? "rgba(255, 255, 255, 0.1)"
+          : Colors.border.ui,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.08,
@@ -189,14 +174,30 @@ const TargetDisplay = ({
       }}
     >
       <View className="items-end">
-        <Text className="text-[10px] font-black uppercase tracking-widest text-navy/40 dark:text-white/40">
-          Next
+        <Text
+          className="text-[10px] font-black uppercase tracking-widest"
+          style={{ color: Colors.text.muted }}
+        >
+          {t("game.next")}
         </Text>
-        <Text className="text-[10px] font-bold text-navy/30 dark:text-white/30">
+        <Text
+          className="text-[10px] font-bold"
+          style={{ color: Colors.text.muted + "80" }}
+        >
           Target
         </Text>
       </View>
-      <View className="w-16 h-16 rounded-2xl bg-success items-center justify-center shadow-lg">
+      <View
+        className="w-16 h-16 rounded-2xl items-center justify-center"
+        style={{
+          backgroundColor: Colors.semantic.success,
+          shadowColor: Colors.semantic.success,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+          elevation: 4,
+        }}
+      >
         <Text className="text-white text-3xl font-black">{currentTarget}</Text>
       </View>
     </View>
@@ -213,6 +214,7 @@ const CountdownOverlay = ({
 }) => {
   const { countdownTick } = useHaptics();
   const [currentCount, setCurrentCount] = useState(count);
+  const scale = useSharedValue(1);
 
   useEffect(() => {
     if (currentCount <= 0) {
@@ -221,6 +223,10 @@ const CountdownOverlay = ({
     }
 
     countdownTick();
+    scale.value = withSequence(
+      withSpring(1.2, { damping: 8, stiffness: 400 }),
+      withSpring(1, { damping: 12, stiffness: 200 })
+    );
 
     const timer = setTimeout(() => {
       setCurrentCount((prev) => prev - 1);
@@ -229,13 +235,23 @@ const CountdownOverlay = ({
     return () => clearTimeout(timer);
   }, [currentCount, onComplete, countdownTick]);
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   if (currentCount <= 0) return null;
 
   return (
-    <View className="absolute inset-0 bg-black/50 items-center justify-center z-50">
-      <Text className="text-white text-[120px] font-black">
-        {currentCount === 0 ? "GO!" : currentCount}
-      </Text>
+    <View
+      className="absolute inset-0 items-center justify-center z-50"
+      style={{ backgroundColor: Colors.overlay.backdrop }}
+    >
+      <Animated.Text
+        className="text-white text-[120px] font-black"
+        style={animatedStyle}
+      >
+        {currentCount === 0 ? t("countdown.go") : currentCount}
+      </Animated.Text>
     </View>
   );
 };
@@ -250,11 +266,18 @@ export default function GameScreen() {
   const setHighScore = useStore((state) => state.setHighScore);
 
   const [showCountdown, setShowCountdown] = useState(true);
+  const [errorTileId, setErrorTileId] = useState<string | null>(null);
+  const [correctTileId, setCorrectTileId] = useState<string | null>(null);
+  const [showVignette, setShowVignette] = useState(false);
+  const [penaltyPosition, setPenaltyPosition] = useState({ x: 0, y: 0 });
+  const [showPenalty, setShowPenalty] = useState(false);
+  const [timerHasError, setTimerHasError] = useState(false);
+  const [penaltyTotal, setPenaltyTotal] = useState(0);
 
   const {
     session,
     currentTarget,
-    handleTilePress,
+    handleTilePress: originalHandleTilePress,
     startGame,
     pauseGame,
     resumeGame,
@@ -262,6 +285,46 @@ export default function GameScreen() {
   } = useGameLogic(mode, difficulty);
 
   const { timeMs, isRunning, start, stop, reset } = useStopwatch();
+  const { errorFeedback, correctFeedback } = useHaptics();
+
+  // Enhanced tile press handler with animations
+  const handleTilePress = useCallback(
+    (tile: Tile, event?: any) => {
+      const isCorrect = tile.orderIndex === session.currentTargetIndex;
+
+      if (isCorrect) {
+        // Correct tap
+        setCorrectTileId(tile.id);
+        correctFeedback();
+        setTimeout(() => setCorrectTileId(null), 300);
+      } else {
+        // Error tap - trigger all feedback
+        setErrorTileId(tile.id);
+        setShowVignette(true);
+        setTimerHasError(true);
+        setPenaltyTotal((prev) => prev + PENALTY_TIME);
+        errorFeedback();
+
+        // Get tap position for penalty popup
+        // Since we can't get exact position, use center of screen
+        setPenaltyPosition({
+          x: SCREEN_WIDTH / 2,
+          y: 300,
+        });
+        setShowPenalty(true);
+
+        // Reset after animation
+        setTimeout(() => {
+          setErrorTileId(null);
+          setShowVignette(false);
+          setTimerHasError(false);
+        }, 500);
+      }
+
+      originalHandleTilePress(tile);
+    },
+    [session.currentTargetIndex, originalHandleTilePress, correctFeedback, errorFeedback]
+  );
 
   // Handle countdown complete
   const handleCountdownComplete = useCallback(() => {
@@ -275,29 +338,28 @@ export default function GameScreen() {
     if (session.status === "FINISHED") {
       stop();
 
+      const totalTimeWithPenalty = timeMs + (penaltyTotal * 1000);
       const previousRecord = getHighScore(mode, difficulty);
       const result = createGameResult(
         session.sessionId,
         mode,
         difficulty,
-        timeMs,
+        totalTimeWithPenalty,
         session.mistakeCount,
         session.tapTimestamps,
         previousRecord
       );
 
-      // Save high score
       if (result.isNewRecord) {
-        setHighScore(mode, difficulty, timeMs);
+        setHighScore(mode, difficulty, totalTimeWithPenalty);
       }
 
-      // Navigate to result
       router.replace({
         pathname: "/result",
         params: { result: JSON.stringify(result) },
       });
     }
-  }, [session.status, timeMs, mode, difficulty, session, getHighScore, setHighScore, stop]);
+  }, [session.status, timeMs, penaltyTotal, mode, difficulty, session, getHighScore, setHighScore, stop]);
 
   // Handle pause
   const handlePause = () => {
@@ -319,19 +381,33 @@ export default function GameScreen() {
   const totalTaps = progress + session.mistakeCount;
   const accuracy = totalTaps > 0 ? ((progress / totalTaps) * 100).toFixed(1) : "100.0";
 
-  const modeInfo = ModeInfo[mode];
+  // Background color based on mode
+  const getBackgroundColor = () => {
+    if (mode === "SENTENCE") return Colors.background.gameSentence;
+    if (isDarkMode) return Colors.background.dark;
+    return Colors.background.game;
+  };
+
+  // Total time with penalty
+  const displayTime = timeMs + (penaltyTotal * 1000);
 
   return (
     <SafeAreaView
-      className={`flex-1 ${
-        mode === "SENTENCE"
-          ? "bg-bg-paper"
-          : isDarkMode
-            ? "bg-bg-dark"
-            : "bg-bg-game"
-      }`}
+      className="flex-1"
+      style={{ backgroundColor: getBackgroundColor() }}
       edges={["top", "bottom"]}
     >
+      {/* Vignette Overlay */}
+      <VignetteOverlay isVisible={showVignette} />
+
+      {/* Penalty Popup */}
+      <PenaltyPopup
+        penaltyTime={PENALTY_TIME}
+        position={penaltyPosition}
+        isVisible={showPenalty}
+        onComplete={() => setShowPenalty(false)}
+      />
+
       {/* Countdown Overlay */}
       {showCountdown && (
         <CountdownOverlay count={3} onComplete={handleCountdownComplete} />
@@ -341,25 +417,55 @@ export default function GameScreen() {
       <View className="flex-row items-center justify-between px-6 pt-4">
         <Pressable
           onPress={handlePause}
-          className="w-11 h-11 items-center justify-center rounded-full bg-panel-muted border border-ui-border active:scale-95"
+          className="w-11 h-11 items-center justify-center rounded-full active:scale-95"
+          style={{
+            backgroundColor: isDarkMode
+              ? "rgba(255, 255, 255, 0.08)"
+              : Colors.background.panel,
+            borderWidth: 1,
+            borderColor: isDarkMode
+              ? "rgba(255, 255, 255, 0.1)"
+              : Colors.border.ui,
+          }}
         >
-          <Text className="text-navy/80 text-lg">{isRunning ? "⏸" : "▶"}</Text>
+          <Text
+            style={{
+              color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+              fontSize: 18,
+            }}
+          >
+            {isRunning ? "⏸" : "▶"}
+          </Text>
         </Pressable>
 
-        <View className="items-center">
-          <Text className="uppercase tracking-[0.2em] text-[10px] font-extrabold text-navy/50 dark:text-white/50 mb-1">
-            Time
-          </Text>
-          <Text className="text-2xl font-extrabold tabular-nums text-navy dark:text-white tracking-tight">
-            {formatTime(timeMs)}
-          </Text>
-        </View>
+        <AnimatedTimer
+          timeMs={displayTime}
+          isRunning={isRunning}
+          hasError={timerHasError}
+          isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
+        />
 
         <Pressable
           onPress={() => router.back()}
-          className="w-11 h-11 items-center justify-center rounded-full bg-panel-muted border border-ui-border"
+          className="w-11 h-11 items-center justify-center rounded-full"
+          style={{
+            backgroundColor: isDarkMode
+              ? "rgba(255, 255, 255, 0.08)"
+              : Colors.background.panel,
+            borderWidth: 1,
+            borderColor: isDarkMode
+              ? "rgba(255, 255, 255, 0.1)"
+              : Colors.border.ui,
+          }}
         >
-          <Text className="text-navy/80 text-lg">✕</Text>
+          <Text
+            style={{
+              color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+              fontSize: 18,
+            }}
+          >
+            ✕
+          </Text>
         </Pressable>
       </View>
 
@@ -372,6 +478,7 @@ export default function GameScreen() {
             currentTarget={currentTarget?.value || ""}
             sentence={session.targetSentence}
             currentIndex={session.currentTargetIndex}
+            isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
           />
         </View>
 
@@ -383,30 +490,77 @@ export default function GameScreen() {
           onTilePress={handleTilePress}
           disabled={session.status !== "PLAYING"}
           mode={mode}
+          errorTileId={errorTileId}
+          correctTileId={correctTileId}
+          isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
         />
 
         {/* Stats Panel */}
         <View className="mt-10 flex-row gap-4">
-          <View className="flex-1 bg-panel-muted rounded-xl p-5 items-center border border-ui-border">
-            <Text className="text-[10px] font-black text-navy/50 uppercase tracking-widest mb-2">
-              Progress
+          <View
+            className="flex-1 rounded-xl p-5 items-center"
+            style={{
+              backgroundColor: isDarkMode
+                ? "rgba(255, 255, 255, 0.05)"
+                : Colors.background.panel,
+              borderWidth: 1,
+              borderColor: isDarkMode
+                ? "rgba(255, 255, 255, 0.1)"
+                : Colors.border.ui,
+            }}
+          >
+            <Text
+              className="text-[10px] font-black uppercase tracking-widest mb-2"
+              style={{ color: Colors.text.muted }}
+            >
+              {t("game.progress")}
             </Text>
-            <View className="w-full bg-navy/10 h-2 rounded-full overflow-hidden">
+            <View
+              className="w-full h-2 rounded-full overflow-hidden"
+              style={{ backgroundColor: isDarkMode ? "rgba(255,255,255,0.1)" : Colors.text.muted + "20" }}
+            >
               <View
-                className="bg-success h-full rounded-full"
-                style={{ width: `${progressPercent}%` }}
+                className="h-full rounded-full"
+                style={{
+                  width: `${progressPercent}%`,
+                  backgroundColor: Colors.semantic.success,
+                }}
               />
             </View>
-            <Text className="text-xs font-bold text-navy/70 mt-2.5">
+            <Text
+              className="text-xs font-bold mt-2.5"
+              style={{
+                color: isDarkMode ? Colors.text.darkSecondary : Colors.text.secondary,
+              }}
+            >
               {progress} / {total}
             </Text>
           </View>
 
-          <View className="flex-1 bg-panel-muted rounded-xl p-5 items-center border border-ui-border">
-            <Text className="text-[10px] font-black text-navy/50 uppercase tracking-widest mb-1">
-              Accuracy
+          <View
+            className="flex-1 rounded-xl p-5 items-center"
+            style={{
+              backgroundColor: isDarkMode
+                ? "rgba(255, 255, 255, 0.05)"
+                : Colors.background.panel,
+              borderWidth: 1,
+              borderColor: isDarkMode
+                ? "rgba(255, 255, 255, 0.1)"
+                : Colors.border.ui,
+            }}
+          >
+            <Text
+              className="text-[10px] font-black uppercase tracking-widest mb-1"
+              style={{ color: Colors.text.muted }}
+            >
+              {t("game.accuracy")}
             </Text>
-            <Text className="text-2xl font-black text-navy tracking-tight">
+            <Text
+              className="text-2xl font-black tracking-tight"
+              style={{
+                color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+              }}
+            >
               {accuracy}%
             </Text>
           </View>
@@ -416,9 +570,18 @@ export default function GameScreen() {
       {/* Footer */}
       <View className="p-10">
         <View className="flex-row items-center justify-center gap-2">
-          <View className="w-2 h-2 rounded-full bg-success" />
-          <View className="w-2 h-2 rounded-full bg-navy/10" />
-          <View className="w-2 h-2 rounded-full bg-navy/10" />
+          <View
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: Colors.semantic.success }}
+          />
+          <View
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: Colors.text.muted + "30" }}
+          />
+          <View
+            className="w-2 h-2 rounded-full"
+            style={{ backgroundColor: Colors.text.muted + "30" }}
+          />
         </View>
       </View>
     </SafeAreaView>
