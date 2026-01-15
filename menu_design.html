@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rapid Type - Title Screen</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1754cf",
+              "background-light": "#FFFDF5", /* Soft cream background for eye comfort */
+              "background-dark": "#111621",
+              "navy-deep": "#0A1A3F",
+              "muted-blue": "#e7ebf3",
+            },
+            fontFamily: {
+              "display": ["Lexend", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        font-family: 'Lexend', sans-serif;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen flex flex-col transition-colors duration-300">
+<!-- Top Navigation Bar -->
+<header class="flex items-center justify-end p-6 pt-12">
+<div class="flex items-center gap-3 bg-white/50 dark:bg-white/10 px-4 py-2 rounded-full border border-gray-200/50 dark:border-gray-800 shadow-sm">
+<span class="text-navy-deep dark:text-gray-300 text-sm font-bold tracking-wide uppercase">Dark Mode</span>
+<div class="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 dark:bg-primary transition-colors cursor-pointer">
+<span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1 dark:translate-x-6"></span>
+</div>
+</div>
+</header>
+<!-- Main Content Container -->
+<main class="flex-grow flex flex-col items-center justify-center px-6 -mt-10">
+<!-- Game Title -->
+<div class="text-center mb-12">
+<div class="mb-4 flex justify-center">
+<div class="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20">
+<span class="material-symbols-outlined text-white text-5xl">keyboard_double_arrow_right</span>
+</div>
+</div>
+<h1 class="text-navy-deep dark:text-white text-[44px] font-bold leading-tight tracking-tight">
+                Rapid Type
+            </h1>
+<p class="text-primary font-medium tracking-widest text-xs uppercase mt-2">Master Your Reflexes</p>
+</div>
+<!-- Mode Selection Section -->
+<div class="w-full max-w-sm space-y-6">
+<div class="text-center">
+<h4 class="text-navy-deep/60 dark:text-gray-400 text-xs font-bold leading-normal tracking-[0.2em] uppercase mb-4">Select Game Mode</h4>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Numbers Mode -->
+<button class="group flex items-center justify-between bg-muted-blue dark:bg-white/5 border border-primary/10 dark:border-white/10 p-5 rounded-xl hover:bg-primary/10 transition-all active:scale-95 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-white dark:bg-white/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">123</span>
+</div>
+<span class="text-navy-deep dark:text-white text-lg font-bold">Numbers</span>
+</div>
+<span class="material-symbols-outlined text-navy-deep/30 dark:text-white/30 group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+<!-- Alphabet Mode -->
+<button class="group flex items-center justify-between bg-primary/20 dark:bg-primary/20 border-2 border-primary p-5 rounded-xl transition-all active:scale-95 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white">spellcheck</span>
+</div>
+<span class="text-navy-deep dark:text-white text-lg font-bold">Alphabet</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-[10px] bg-primary text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Active</span>
+</div>
+</button>
+<!-- Sentence Mode -->
+<button class="group flex items-center justify-between bg-muted-blue dark:bg-white/5 border border-primary/10 dark:border-white/10 p-5 rounded-xl hover:bg-primary/10 transition-all active:scale-95 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-white dark:bg-white/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">subject</span>
+</div>
+<span class="text-navy-deep dark:text-white text-lg font-bold">Sentence</span>
+</div>
+<span class="material-symbols-outlined text-navy-deep/30 dark:text-white/30 group-hover:text-primary transition-colors">chevron_right</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Footer Action Area -->
+<footer class="p-6 pb-12 flex flex-col gap-4 max-w-sm mx-auto w-full">
+<button class="w-full bg-primary hover:bg-blue-700 text-white h-16 rounded-2xl flex items-center justify-center gap-2 text-xl font-bold tracking-wide shadow-lg shadow-primary/30 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">play_arrow</span>
+<span>START GAME</span>
+</button>
+<div class="flex justify-between px-4 mt-2">
+<button class="flex flex-col items-center gap-1 group">
+<div class="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-navy-deep dark:text-white">leaderboard</span>
+</div>
+<span class="text-[10px] font-bold text-navy-deep/60 dark:text-gray-400 uppercase tracking-tighter">Scores</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-navy-deep dark:text-white">settings</span>
+</div>
+<span class="text-[10px] font-bold text-navy-deep/60 dark:text-gray-400 uppercase tracking-tighter">Settings</span>
+</button>
+<button class="flex flex-col items-center gap-1 group">
+<div class="p-2 rounded-full group-hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-navy-deep dark:text-white">emoji_events</span>
+</div>
+<span class="text-[10px] font-bold text-navy-deep/60 dark:text-gray-400 uppercase tracking-tighter">Awards</span>
+</button>
+</div>
+</footer>
+<!-- Eye comfort subtle texture overlay -->
+<div class="fixed inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.02]" data-alt="Subtle geometric texture for eye comfort" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBY9gqFsVoDun-zIdWQ_vLD56FGK5n4MgLgYF5pILPaSyNc16xz_IdX2gssjeSRPfWwYmrnKQwKl4ngpRQCo5dKRYKCOUc6CRWAnyEeZHKAB02puJV1uC-Ok8ew8KDIXZ21VkHeCN0LxzUVR_y7Quas1-BhEEmVJQvfqq4OGaW-BC2qYE9P5yoxB66Mj438B_GrS700zXFriADfDhf8tbxlTXNLxvZnZYsUeo-ECkqWbMFuJqMuxz8G57INe1LStVY_tF6h9H3EPXA');"></div>
+</body></html>
