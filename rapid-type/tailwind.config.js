@@ -44,21 +44,11 @@ module.exports = {
         "ui-border": "#CBD5E1",
         "accent-border": "#C4C0B5",
       },
-      fontFamily: {
-        display: ["Lexend", "sans-serif"],
-        body: ["Plus Jakarta Sans", "sans-serif"],
-        japanese: ["Noto Sans JP", "sans-serif"],
-      },
       borderRadius: {
         ios: "1.25rem",
         panel: "1rem",
         "2xl": "1.5rem",
         "3xl": "2rem",
-      },
-      boxShadow: {
-        tactile: "0 2px 4px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)",
-        panel: "0 4px 12px -2px rgba(0, 0, 0, 0.08)",
-        primary: "0 4px 14px -2px rgba(23, 84, 207, 0.3)",
       },
     },
   },
