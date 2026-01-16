@@ -3,7 +3,7 @@
  * Provides global context, fonts, and navigation structure
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View, ActivityIndicator } from "react-native";
@@ -11,12 +11,30 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useStore, useStoreHydration } from "../src/store";
 import { Colors } from "../src/constants";
 
+// Hydration timeout to prevent infinite loading
+const HYDRATION_TIMEOUT_MS = 3000;
+
 export default function RootLayout() {
   const hasHydrated = useStoreHydration();
   const isDarkMode = useStore((state) => state.settings.isDarkMode);
+  const setHasHydrated = useStore((state) => state.setHasHydrated);
+  const [timedOut, setTimedOut] = useState(false);
 
-  // Wait for store hydration
-  if (!hasHydrated) {
+  // Safety timeout for hydration
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!hasHydrated) {
+        console.warn("Store hydration timed out, proceeding anyway");
+        setHasHydrated(true);
+        setTimedOut(true);
+      }
+    }, HYDRATION_TIMEOUT_MS);
+
+    return () => clearTimeout(timer);
+  }, [hasHydrated, setHasHydrated]);
+
+  // Wait for store hydration (with timeout fallback)
+  if (!hasHydrated && !timedOut) {
     return (
       <View
         style={{
