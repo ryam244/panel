@@ -3,54 +3,14 @@
  * Shows game history, best times, and performance graphs
  */
 
-import { View, Text, Pressable, ScrollView, Dimensions } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
 import { useStore, GameHistoryEntry } from "../src/store";
 import { Colors } from "../src/constants";
 import { formatTime } from "../src/lib";
 import { t } from "../src/i18n";
 import type { GameMode, Difficulty } from "../src/types";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-// Simple bar chart component
-const SimpleBarChart = ({
-  data,
-  maxValue,
-  isDarkMode,
-}: {
-  data: { label: string; value: number; color?: string }[];
-  maxValue: number;
-  isDarkMode: boolean;
-}) => {
-  return (
-    <View style={{ height: 100 }}>
-      {data.map((item, index) => {
-        const height = maxValue > 0 ? (item.value / maxValue) * 80 : 0;
-        return (
-          <View key={index} style={{ flex: 1 }}>
-            <View
-              style={{
-                width: 24,
-                height: Math.max(4, height),
-                backgroundColor: item.color || Colors.primary.default,
-                borderRadius: 4,
-              }}
-            />
-            <Text
-             
-              style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-            >
-              {item.label}
-            </Text>
-          </View>
-        );
-      })}
-    </View>
-  );
-};
 
 // Mode label helper
 const getModeLabel = (mode: GameMode): string => {
@@ -88,6 +48,28 @@ const getRankColor = (rank: string): string => {
   }
 };
 
+// Stats Row Component (like settings)
+const StatsRow = ({
+  label,
+  value,
+  isDarkMode,
+}: {
+  label: string;
+  value: string;
+  isDarkMode: boolean;
+}) => {
+  return (
+    <View style={[styles.statsRow, isDarkMode && styles.statsRowDark]}>
+      <Text style={[styles.statsLabel, isDarkMode && styles.statsLabelDark]}>
+        {label}
+      </Text>
+      <Text style={[styles.statsValue, isDarkMode && styles.statsValueDark]}>
+        {value}
+      </Text>
+    </View>
+  );
+};
+
 // History item component
 const HistoryItem = ({
   entry,
@@ -100,108 +82,30 @@ const HistoryItem = ({
   const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
 
   return (
-    <View
-     
-      style={{
-        backgroundColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.05)"
-          : Colors.background.panel,
-        borderWidth: 1,
-        borderColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.1)"
-          : Colors.border.ui,
-      }}
-    >
-      <View>
-        <View
-         
-          style={{ backgroundColor: getRankColor(entry.rank) + "20" }}
-        >
-          <Text
-           
-            style={{ color: getRankColor(entry.rank) }}
-          >
+    <View style={[styles.historyItem, isDarkMode && styles.historyItemDark]}>
+      <View style={styles.historyLeft}>
+        <View style={[styles.rankBadge, { backgroundColor: getRankColor(entry.rank) + "20" }]}>
+          <Text style={[styles.rankText, { color: getRankColor(entry.rank) }]}>
             {entry.rank}
           </Text>
         </View>
         <View>
-          <Text
-           
-            style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
-          >
+          <Text style={[styles.historyMode, isDarkMode && styles.historyModeDark]}>
             {getModeLabel(entry.mode)}
           </Text>
-          <Text
-           
-            style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-          >
+          <Text style={[styles.historyMeta, isDarkMode && styles.historyMetaDark]}>
             {getDifficultyLabel(entry.difficulty)} · {dateStr}
           </Text>
         </View>
       </View>
-      <View>
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
-        >
+      <View style={styles.historyRight}>
+        <Text style={[styles.historyTime, isDarkMode && styles.historyTimeDark]}>
           {formatTime(entry.clearTime)}
         </Text>
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-        >
+        <Text style={[styles.historyAccuracy, isDarkMode && styles.historyAccuracyDark]}>
           {entry.accuracy.toFixed(1)}%
         </Text>
       </View>
-    </View>
-  );
-};
-
-// Stat card component
-const StatCard = ({
-  label,
-  value,
-  subValue,
-  isDarkMode,
-}: {
-  label: string;
-  value: string;
-  subValue?: string;
-  isDarkMode: boolean;
-}) => {
-  return (
-    <View
-     
-      style={{
-        backgroundColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.05)"
-          : Colors.background.panel,
-        borderWidth: 1,
-        borderColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.1)"
-          : Colors.border.ui,
-      }}
-    >
-      <Text
-       
-        style={{ color: Colors.text.muted }}
-      >
-        {label}
-      </Text>
-      <Text
-       
-        style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
-      >
-        {value}
-      </Text>
-      {subValue && (
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-        >
-          {subValue}
-        </Text>
-      )}
     </View>
   );
 };
@@ -219,36 +123,16 @@ const BestTimeCard = ({
   isDarkMode: boolean;
 }) => {
   return (
-    <View
-     
-      style={{
-        backgroundColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.05)"
-          : Colors.background.panel,
-        borderWidth: 1,
-        borderColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.1)"
-          : Colors.border.ui,
-      }}
-    >
+    <View style={[styles.bestTimeCard, isDarkMode && styles.bestTimeCardDark]}>
       <View>
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
-        >
+        <Text style={[styles.bestTimeMode, isDarkMode && styles.bestTimeModeDark]}>
           {getModeLabel(mode)}
         </Text>
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-        >
+        <Text style={[styles.bestTimeDiff, isDarkMode && styles.bestTimeDiffDark]}>
           {getDifficultyLabel(difficulty)}
         </Text>
       </View>
-      <Text
-       
-        style={{ color: Colors.primary.default }}
-      >
+      <Text style={styles.bestTimeValue}>
         {formatTime(time)}
       </Text>
     </View>
@@ -260,7 +144,6 @@ export default function StatsScreen() {
   const stats = useStore((state) => state.stats);
   const highScores = useStore((state) => state.highScores);
   const gameHistory = useStore((state) => state.gameHistory);
-  const modeStats = useStore((state) => state.modeStats);
 
   // Format play time
   const formatPlayTime = (ms: number): string => {
@@ -271,15 +154,6 @@ export default function StatsScreen() {
     }
     return `${minutes}${t("time.minutes")}`;
   };
-
-  // Prepare chart data from recent history
-  const recentGames = gameHistory.slice(0, 7);
-  const chartData = recentGames.reverse().map((game, i) => ({
-    label: `#${i + 1}`,
-    value: game.clearTime / 1000,
-    color: getRankColor(game.rank),
-  }));
-  const maxTime = Math.max(...chartData.map((d) => d.value), 1);
 
   // Get high scores as array
   const highScoreEntries = Object.entries(highScores).map(([key, time]) => {
@@ -299,161 +173,88 @@ export default function StatsScreen() {
 
   return (
     <SafeAreaView
-     
-      style={{
-        backgroundColor: isDarkMode
-          ? Colors.background.dark
-          : Colors.background.light,
-      }}
-      edges={["top"]}
+      style={[styles.container, isDarkMode && styles.containerDark]}
+      edges={["top", "bottom"]}
     >
       {/* Header */}
-      <View>
-        <Pressable
-          onPress={() => router.back()}
-         
-          style={{
-            backgroundColor: isDarkMode
-              ? "rgba(255, 255, 255, 0.08)"
-              : Colors.background.panel,
-          }}
-        >
-          <ChevronLeft
-            size={24}
-            color={isDarkMode ? Colors.text.dark : Colors.text.primary}
-          />
-        </Pressable>
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
-        >
+      <View style={styles.header}>
+        <View style={styles.headerSpacer} />
+        <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
           {t("stats.title")}
         </Text>
+        <Pressable
+          onPress={() => router.back()}
+          style={[styles.closeButton, isDarkMode && styles.closeButtonDark]}
+        >
+          <Text style={[styles.closeButtonText, isDarkMode && styles.closeButtonTextDark]}>
+            ✕
+          </Text>
+        </Pressable>
       </View>
 
+      {/* Content */}
       <ScrollView
-       
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Overview Stats */}
-        <Text
-         
-          style={{ color: Colors.text.muted }}
-        >
+        {/* Overview Section */}
+        <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
           {t("stats.overview")}
         </Text>
-        <View>
-          <StatCard
-            label={t("stats.totalGames")}
-            value={stats.totalGamesPlayed.toString()}
-            isDarkMode={isDarkMode}
-          />
-          <StatCard
-            label={t("settings.totalPlayTime")}
-            value={formatPlayTime(stats.totalPlayTime)}
-            isDarkMode={isDarkMode}
-          />
-        </View>
 
-        <View>
-          <StatCard
-            label={t("stats.avgTime")}
-            value={avgTime > 0 ? formatTime(avgTime) : "-"}
-            isDarkMode={isDarkMode}
-          />
-          <StatCard
-            label={t("stats.avgAccuracy")}
-            value={avgAccuracy > 0 ? `${avgAccuracy.toFixed(1)}%` : "-"}
-            isDarkMode={isDarkMode}
-          />
-        </View>
+        <StatsRow
+          label={t("stats.totalGames")}
+          value={stats.totalGamesPlayed.toString()}
+          isDarkMode={isDarkMode}
+        />
+        <StatsRow
+          label={t("settings.totalPlayTime")}
+          value={formatPlayTime(stats.totalPlayTime)}
+          isDarkMode={isDarkMode}
+        />
+        <StatsRow
+          label={t("stats.avgTime")}
+          value={avgTime > 0 ? formatTime(avgTime) : "-"}
+          isDarkMode={isDarkMode}
+        />
+        <StatsRow
+          label={t("stats.avgAccuracy")}
+          value={avgAccuracy > 0 ? `${avgAccuracy.toFixed(1)}%` : "-"}
+          isDarkMode={isDarkMode}
+        />
 
-        {/* Performance Chart */}
-        {chartData.length > 0 && (
-          <>
-            <Text
-             
-              style={{ color: Colors.text.muted }}
-            >
-              {t("stats.history")} (s)
-            </Text>
-            <View
-             
-              style={{
-                backgroundColor: isDarkMode
-                  ? "rgba(255, 255, 255, 0.05)"
-                  : Colors.background.panel,
-                borderWidth: 1,
-                borderColor: isDarkMode
-                  ? "rgba(255, 255, 255, 0.1)"
-                  : Colors.border.ui,
-              }}
-            >
-              <SimpleBarChart
-                data={chartData}
-                maxValue={maxTime}
-                isDarkMode={isDarkMode}
-              />
-            </View>
-          </>
-        )}
-
-        {/* Best Times */}
-        <Text
-         
-          style={{ color: Colors.text.muted }}
-        >
+        {/* Best Times Section */}
+        <Text style={[styles.sectionTitle, styles.sectionTitleMargin, isDarkMode && styles.sectionTitleDark]}>
           {t("stats.bestTimes")}
         </Text>
+
         {highScoreEntries.length > 0 ? (
-          <View>
-            {highScoreEntries.map((entry) => (
-              <BestTimeCard
-                key={`${entry.mode}_${entry.difficulty}`}
-                mode={entry.mode}
-                difficulty={entry.difficulty}
-                time={entry.time}
-                isDarkMode={isDarkMode}
-              />
-            ))}
-          </View>
+          highScoreEntries.map((entry) => (
+            <BestTimeCard
+              key={`${entry.mode}_${entry.difficulty}`}
+              mode={entry.mode}
+              difficulty={entry.difficulty}
+              time={entry.time}
+              isDarkMode={isDarkMode}
+            />
+          ))
         ) : (
-          <View
-           
-            style={{
-              backgroundColor: isDarkMode
-                ? "rgba(255, 255, 255, 0.05)"
-                : Colors.background.panel,
-              borderWidth: 1,
-              borderColor: isDarkMode
-                ? "rgba(255, 255, 255, 0.1)"
-                : Colors.border.ui,
-            }}
-          >
-            <Text>🎮</Text>
-            <Text
-             
-              style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
-            >
+          <View style={[styles.emptyCard, isDarkMode && styles.emptyCardDark]}>
+            <Text style={styles.emptyIcon}>🎮</Text>
+            <Text style={[styles.emptyTitle, isDarkMode && styles.emptyTitleDark]}>
               {t("stats.noRecords")}
             </Text>
-            <Text
-             
-              style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-            >
+            <Text style={[styles.emptyText, isDarkMode && styles.emptyTextDark]}>
               {t("stats.playToRecord")}
             </Text>
           </View>
         )}
 
-        {/* Recent History */}
+        {/* Recent History Section */}
         {gameHistory.length > 0 && (
           <>
-            <Text
-             
-              style={{ color: Colors.text.muted }}
-            >
+            <Text style={[styles.sectionTitle, styles.sectionTitleMargin, isDarkMode && styles.sectionTitleDark]}>
               {t("stats.history")}
             </Text>
             {gameHistory.slice(0, 10).map((entry) => (
@@ -465,3 +266,232 @@ export default function StatsScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background.light,
+  },
+  containerDark: {
+    backgroundColor: Colors.background.dark,
+  },
+  // Header
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.text.primary,
+  },
+  headerTitleDark: {
+    color: "#fff",
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+    backgroundColor: "#fff",
+  },
+  closeButtonDark: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: Colors.text.primary,
+  },
+  closeButtonTextDark: {
+    color: "#fff",
+  },
+  // Content
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+  // Section Title
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 12,
+    color: Colors.text.muted,
+  },
+  sectionTitleDark: {
+    color: "rgba(255,255,255,0.4)",
+  },
+  sectionTitleMargin: {
+    marginTop: 32,
+  },
+  // Stats Row
+  statsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: "#fff",
+  },
+  statsRowDark: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  statsLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: Colors.text.muted,
+  },
+  statsLabelDark: {
+    color: "rgba(255,255,255,0.7)",
+  },
+  statsValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: Colors.text.primary,
+  },
+  statsValueDark: {
+    color: "#fff",
+  },
+  // Best Time Card
+  bestTimeCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: "#fff",
+  },
+  bestTimeCardDark: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  bestTimeMode: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.text.primary,
+  },
+  bestTimeModeDark: {
+    color: "#fff",
+  },
+  bestTimeDiff: {
+    fontSize: 12,
+    color: Colors.text.muted,
+    marginTop: 2,
+  },
+  bestTimeDiffDark: {
+    color: "rgba(255,255,255,0.5)",
+  },
+  bestTimeValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.primary.default,
+  },
+  // History Item
+  historyItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    backgroundColor: "#fff",
+  },
+  historyItemDark: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  historyLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  rankBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rankText: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  historyMode: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.text.primary,
+  },
+  historyModeDark: {
+    color: "#fff",
+  },
+  historyMeta: {
+    fontSize: 12,
+    color: Colors.text.muted,
+    marginTop: 2,
+  },
+  historyMetaDark: {
+    color: "rgba(255,255,255,0.5)",
+  },
+  historyRight: {
+    alignItems: "flex-end",
+  },
+  historyTime: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: Colors.text.primary,
+  },
+  historyTimeDark: {
+    color: "#fff",
+  },
+  historyAccuracy: {
+    fontSize: 12,
+    color: Colors.text.muted,
+    marginTop: 2,
+  },
+  historyAccuracyDark: {
+    color: "rgba(255,255,255,0.5)",
+  },
+  // Empty State
+  emptyCard: {
+    padding: 32,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    alignItems: "center",
+  },
+  emptyCardDark: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.text.primary,
+    marginBottom: 8,
+  },
+  emptyTitleDark: {
+    color: "#fff",
+  },
+  emptyText: {
+    fontSize: 14,
+    color: Colors.text.muted,
+    textAlign: "center",
+  },
+  emptyTextDark: {
+    color: "rgba(255,255,255,0.5)",
+  },
+});

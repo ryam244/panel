@@ -19,6 +19,7 @@ import {
   AnimatedTimer,
   ShakeTile,
 } from "../../src/components/feedback";
+import { ExitConfirmDialog } from "../../src/components/overlays/ExitConfirmDialog";
 import type { GameMode, Difficulty, Tile } from "../../src/types";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -212,6 +213,7 @@ export default function GameScreen() {
   const [showPenalty, setShowPenalty] = useState(false);
   const [timerHasError, setTimerHasError] = useState(false);
   const [penaltyTotal, setPenaltyTotal] = useState(0);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   const {
     session,
@@ -318,6 +320,30 @@ export default function GameScreen() {
     }
   };
 
+  // Handle exit button press
+  const handleExitPress = () => {
+    if (isRunning) {
+      pauseGame();
+      stop();
+    }
+    setShowExitConfirm(true);
+  };
+
+  // Handle exit confirm
+  const handleExitConfirm = () => {
+    setShowExitConfirm(false);
+    router.back();
+  };
+
+  // Handle exit cancel
+  const handleExitCancel = () => {
+    setShowExitConfirm(false);
+    if (session.status === "PLAYING") {
+      resumeGame();
+      start();
+    }
+  };
+
   // Calculate progress
   const progress = session.tiles.filter((t) => t.isCleared).length;
   const total = session.tiles.length;
@@ -382,7 +408,7 @@ export default function GameScreen() {
         />
 
         <Pressable
-          onPress={() => router.back()}
+          onPress={handleExitPress}
           style={[
             styles.headerButton,
             effectiveIsDarkMode && styles.headerButtonDark,
@@ -393,6 +419,13 @@ export default function GameScreen() {
           </Text>
         </Pressable>
       </View>
+
+      {/* Exit Confirmation Dialog */}
+      <ExitConfirmDialog
+        isVisible={showExitConfirm}
+        onConfirm={handleExitConfirm}
+        onCancel={handleExitCancel}
+      />
 
       {/* Main Content */}
       <View style={styles.mainContent}>
