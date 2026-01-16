@@ -1,53 +1,47 @@
 /**
  * VignetteOverlay - Error feedback vignette effect
- * Shows a red gradient around the screen edges on mistake
+ * Shows a red overlay around the screen edges on mistake (simplified without reanimated)
  */
 
-import { StyleSheet, Dimensions } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  Easing,
-} from "react-native-reanimated";
+import { StyleSheet, View } from "react-native";
+import { useState, useEffect, useRef } from "react";
 import { Colors } from "../../constants";
-
-const { width, height } = Dimensions.get("window");
 
 interface VignetteOverlayProps {
   isVisible: boolean;
 }
 
 export const VignetteOverlay = ({ isVisible }: VignetteOverlayProps) => {
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withSequence(
-        withTiming(isVisible ? 1 : 0, {
-          duration: 100,
-          easing: Easing.out(Easing.quad),
-        }),
-        withTiming(0, {
-          duration: 400,
-          easing: Easing.in(Easing.quad),
-        })
-      ),
-    };
+  const [showOverlay, setShowOverlay] = useState(false);
+  const prevVisibleRef = useRef(isVisible);
+
+  useEffect(() => {
+    // Only show when isVisible changes from false to true
+    if (isVisible && !prevVisibleRef.current) {
+      setShowOverlay(true);
+      const timer = setTimeout(() => {
+        setShowOverlay(false);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+    prevVisibleRef.current = isVisible;
   }, [isVisible]);
 
+  if (!showOverlay) {
+    return null;
+  }
+
   return (
-    <Animated.View
-      pointerEvents="none"
-      style={[styles.container, animatedStyle]}
-    >
+    <View pointerEvents="none" style={styles.container}>
       {/* Top vignette */}
-      <Animated.View style={[styles.vignette, styles.top]} />
+      <View style={[styles.vignette, styles.top]} />
       {/* Bottom vignette */}
-      <Animated.View style={[styles.vignette, styles.bottom]} />
+      <View style={[styles.vignette, styles.bottom]} />
       {/* Left vignette */}
-      <Animated.View style={[styles.vignette, styles.left]} />
+      <View style={[styles.vignette, styles.left]} />
       {/* Right vignette */}
-      <Animated.View style={[styles.vignette, styles.right]} />
-    </Animated.View>
+      <View style={[styles.vignette, styles.right]} />
+    </View>
   );
 };
 
@@ -67,7 +61,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: VIGNETTE_SIZE,
-    // Gradient effect via opacity
     opacity: 0.8,
   },
   bottom: {

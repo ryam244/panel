@@ -1,17 +1,10 @@
 /**
  * AnimatedTimer - Timer with error flash effect
- * Flashes red briefly on mistake to provide instant feedback
+ * Shows time with visual feedback on mistakes (simplified without reanimated)
  */
 
 import { StyleSheet, View, Text } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-  useSharedValue,
-  Easing,
-} from "react-native-reanimated";
-import { useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Colors, TextStyles } from "../../constants";
 
 interface AnimatedTimerProps {
@@ -41,53 +34,30 @@ export const AnimatedTimer = ({
   isDarkMode = false,
   size = "normal",
 }: AnimatedTimerProps) => {
-  const colorProgress = useSharedValue(0);
+  const [isFlashing, setIsFlashing] = useState(false);
+  const prevErrorRef = useRef(hasError);
 
   useEffect(() => {
-    if (hasError) {
-      // Flash red on error
-      colorProgress.value = withSequence(
-        withTiming(1, { duration: 50 }),
-        withTiming(0, {
-          duration: 400,
-          easing: Easing.out(Easing.quad),
-        })
-      );
+    // Only flash when hasError changes from false to true
+    if (hasError && !prevErrorRef.current) {
+      setIsFlashing(true);
+      const timer = setTimeout(() => {
+        setIsFlashing(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
+    prevErrorRef.current = hasError;
   }, [hasError]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    const errorColor = Colors.timer.error;
-    const normalColor = isDarkMode
-      ? Colors.timer.defaultDark
-      : Colors.timer.default;
-
-    // Interpolate between normal and error color
-    // Using opacity trick since interpolateColor needs worklet
-    return {
-      opacity: 1,
-    };
-  });
-
-  const textAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      color: colorProgress.value > 0.5
-        ? Colors.timer.error
-        : (isDarkMode ? Colors.timer.defaultDark : Colors.timer.default),
-      transform: [
-        {
-          scale: colorProgress.value > 0.5
-            ? 1.05
-            : 1,
-        },
-      ],
-    };
-  });
-
   const isLarge = size === "large";
+  const textColor = isFlashing
+    ? Colors.timer.error
+    : isDarkMode
+    ? Colors.timer.defaultDark
+    : Colors.timer.default;
 
   return (
-    <Animated.View style={[styles.container, animatedStyle]}>
+    <View style={styles.container}>
       <View style={styles.labelContainer}>
         <Text
           style={[
@@ -98,15 +68,16 @@ export const AnimatedTimer = ({
           TIME
         </Text>
       </View>
-      <Animated.Text
+      <Text
         style={[
           isLarge ? styles.timeLarge : styles.time,
-          textAnimatedStyle,
+          { color: textColor },
+          isFlashing && styles.flashScale,
         ]}
       >
         {formatTime(timeMs)}
-      </Animated.Text>
-    </Animated.View>
+      </Text>
+    </View>
   );
 };
 
@@ -134,6 +105,9 @@ const styles = StyleSheet.create({
   timeLarge: {
     ...TextStyles.timerLarge,
     fontVariant: ["tabular-nums"],
+  },
+  flashScale: {
+    transform: [{ scale: 1.05 }],
   },
 });
 

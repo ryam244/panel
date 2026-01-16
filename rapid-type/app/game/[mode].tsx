@@ -5,17 +5,9 @@
  */
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { View, Text, Pressable, Dimensions } from "react-native";
+import { View, Text, Pressable, Dimensions, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-  withSpring,
-  Easing,
-} from "react-native-reanimated";
 import { useStore } from "../../src/store";
 import { useGameLogic, useStopwatch, useHaptics, useSounds } from "../../src/hooks";
 import { Colors, ModeInfo } from "../../src/constants";
@@ -33,9 +25,6 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 // Constants
 const PENALTY_TIME = 1.0; // seconds
-
-// Animated Pressable
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 // Grid Board Component with ShakeTile
 const GridBoard = ({
@@ -250,7 +239,6 @@ const CountdownOverlay = ({
   const { countdownTick } = useHaptics();
   const sounds = useSounds();
   const [currentCount, setCurrentCount] = useState(count);
-  const scale = useSharedValue(1);
 
   useEffect(() => {
     if (currentCount <= 0) {
@@ -260,10 +248,6 @@ const CountdownOverlay = ({
 
     countdownTick();
     sounds.playCountdown();
-    scale.value = withSequence(
-      withSpring(1.2, { damping: 8, stiffness: 400 }),
-      withSpring(1, { damping: 12, stiffness: 200 })
-    );
 
     const timer = setTimeout(() => {
       setCurrentCount((prev) => prev - 1);
@@ -272,26 +256,35 @@ const CountdownOverlay = ({
     return () => clearTimeout(timer);
   }, [currentCount, onComplete, countdownTick]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   if (currentCount <= 0) return null;
 
   return (
-    <View
-     
-      style={{ backgroundColor: Colors.overlay.backdrop }}
-    >
-      <Animated.Text
-       
-        style={animatedStyle}
-      >
-        {currentCount === 0 ? t("countdown.go") : currentCount}
-      </Animated.Text>
+    <View style={countdownStyles.overlay}>
+      <Text style={countdownStyles.text}>
+        {currentCount}
+      </Text>
     </View>
   );
 };
+
+const countdownStyles = StyleSheet.create({
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.overlay.backdrop,
+  },
+  text: {
+    fontSize: 120,
+    fontWeight: "900",
+    color: "#fff",
+  },
+});
 
 export default function GameScreen() {
   const params = useLocalSearchParams<{ mode: string; difficulty: string }>();

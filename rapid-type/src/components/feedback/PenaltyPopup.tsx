@@ -1,20 +1,10 @@
 /**
  * PenaltyPopup - Floating penalty time display
- * Shows "+1.0s" floating up from tap position on mistake
+ * Shows "+1.0s" floating at tap position on mistake (simplified without reanimated)
  */
 
 import { StyleSheet, Text, View } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  withSequence,
-  withDelay,
-  runOnJS,
-  Easing,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
-import { useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Colors, TextStyles } from "../../constants";
 
 interface PenaltyPopupProps {
@@ -30,56 +20,28 @@ export const PenaltyPopup = ({
   isVisible,
   onComplete,
 }: PenaltyPopupProps) => {
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.5);
+  const [showPopup, setShowPopup] = useState(false);
+  const prevVisibleRef = useRef(isVisible);
 
   useEffect(() => {
-    if (isVisible) {
-      // Reset
-      translateY.value = 0;
-      opacity.value = 0;
-      scale.value = 0.5;
-
-      // Animate: fade in, float up, fade out
-      opacity.value = withSequence(
-        withTiming(1, { duration: 100 }),
-        withDelay(
-          400,
-          withTiming(0, { duration: 300 }, (finished) => {
-            if (finished && onComplete) {
-              runOnJS(onComplete)();
-            }
-          })
-        )
-      );
-
-      translateY.value = withTiming(-60, {
-        duration: 800,
-        easing: Easing.out(Easing.quad),
-      });
-
-      scale.value = withSpring(1, {
-        damping: 12,
-        stiffness: 200,
-      });
+    // Only show when isVisible changes from false to true
+    if (isVisible && !prevVisibleRef.current) {
+      setShowPopup(true);
+      const timer = setTimeout(() => {
+        setShowPopup(false);
+        onComplete?.();
+      }, 800);
+      return () => clearTimeout(timer);
     }
-  }, [isVisible]);
+    prevVisibleRef.current = isVisible;
+  }, [isVisible, onComplete]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateY: translateY.value },
-      { scale: scale.value },
-    ],
-    opacity: opacity.value,
-  }));
-
-  if (!isVisible && opacity.value === 0) {
+  if (!showPopup) {
     return null;
   }
 
   return (
-    <Animated.View
+    <View
       pointerEvents="none"
       style={[
         styles.container,
@@ -87,13 +49,12 @@ export const PenaltyPopup = ({
           left: position.x - 40,
           top: position.y - 20,
         },
-        animatedStyle,
       ]}
     >
       <View style={styles.bubble}>
         <Text style={styles.text}>+{penaltyTime.toFixed(1)}s</Text>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 

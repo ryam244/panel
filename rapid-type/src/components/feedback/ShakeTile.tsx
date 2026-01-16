@@ -1,19 +1,8 @@
 /**
- * ShakeTile - Animated tile with shake effect on error
- * Includes brick-red color change and horizontal shake
+ * ShakeTile - Simple tile component (animations removed for Expo Go compatibility)
  */
 
 import { StyleSheet, Text, Pressable, View } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  withSequence,
-  withTiming,
-  withSpring,
-  useSharedValue,
-  Easing,
-  interpolateColor,
-} from "react-native-reanimated";
-import { useEffect } from "react";
 import { Colors, TextStyles, BorderRadius } from "../../constants";
 import type { Tile } from "../../types";
 
@@ -23,13 +12,11 @@ interface ShakeTileProps {
   onPress: (tile: Tile) => void;
   size: number;
   disabled?: boolean;
-  hasError?: boolean;      // Trigger error animation
-  isCorrect?: boolean;     // Trigger correct animation
+  hasError?: boolean;
+  isCorrect?: boolean;
   isDarkMode?: boolean;
   mode?: "numbers" | "alphabet" | "sentence";
 }
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export const ShakeTile = ({
   tile,
@@ -42,74 +29,6 @@ export const ShakeTile = ({
   isDarkMode = false,
   mode = "numbers",
 }: ShakeTileProps) => {
-  const shakeX = useSharedValue(0);
-  const scale = useSharedValue(1);
-  const colorProgress = useSharedValue(0);
-  const correctPulse = useSharedValue(0);
-
-  // Error shake animation
-  useEffect(() => {
-    if (hasError) {
-      // Horizontal shake
-      shakeX.value = withSequence(
-        withTiming(-8, { duration: 50 }),
-        withTiming(8, { duration: 50 }),
-        withTiming(-6, { duration: 50 }),
-        withTiming(6, { duration: 50 }),
-        withTiming(-4, { duration: 50 }),
-        withTiming(4, { duration: 50 }),
-        withTiming(0, { duration: 50 })
-      );
-
-      // Color flash to brick red
-      colorProgress.value = withSequence(
-        withTiming(1, { duration: 100 }),
-        withTiming(0, {
-          duration: 600,
-          easing: Easing.out(Easing.quad),
-        })
-      );
-    }
-  }, [hasError]);
-
-  // Correct pulse animation
-  useEffect(() => {
-    if (isCorrect) {
-      correctPulse.value = withSequence(
-        withSpring(1.08, { damping: 8, stiffness: 400 }),
-        withSpring(1, { damping: 12, stiffness: 200 })
-      );
-    }
-  }, [isCorrect]);
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const errorBg = Colors.panel.error;
-    const normalBg = isDarkMode
-      ? "rgba(255, 255, 255, 0.08)"
-      : Colors.panel.default;
-
-    return {
-      transform: [
-        { translateX: shakeX.value },
-        { scale: correctPulse.value > 1 ? correctPulse.value : scale.value },
-      ],
-      backgroundColor: colorProgress.value > 0
-        ? errorBg
-        : normalBg,
-      borderColor: colorProgress.value > 0
-        ? Colors.border.error
-        : (isDarkMode ? "rgba(255, 255, 255, 0.15)" : Colors.border.default),
-    };
-  });
-
-  const textAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      color: colorProgress.value > 0.5
-        ? Colors.neutral.white
-        : (isDarkMode ? Colors.text.dark : Colors.text.primary),
-    };
-  });
-
   if (tile.isCleared) {
     return <View style={[styles.clearedTile, { width: size, height: size }]} />;
   }
@@ -119,8 +38,26 @@ export const ShakeTile = ({
     ? TextStyles.japaneseChar
     : TextStyles.tileNumber;
 
+  const backgroundColor = hasError
+    ? Colors.panel.error
+    : isDarkMode
+      ? "rgba(255, 255, 255, 0.08)"
+      : Colors.panel.default;
+
+  const borderColor = hasError
+    ? Colors.border.error
+    : isDarkMode
+      ? "rgba(255, 255, 255, 0.15)"
+      : Colors.border.default;
+
+  const textColor = hasError
+    ? Colors.neutral.white
+    : isDarkMode
+      ? Colors.text.dark
+      : Colors.text.primary;
+
   return (
-    <AnimatedPressable
+    <Pressable
       onPress={() => onPress(tile)}
       disabled={disabled || tile.isCleared}
       style={[
@@ -128,15 +65,17 @@ export const ShakeTile = ({
         {
           width: size,
           height: size,
+          backgroundColor,
+          borderColor,
         },
         isDarkMode && styles.tileDark,
-        animatedStyle,
+        isCorrect && styles.tileCorrect,
       ]}
     >
-      <Animated.Text style={[textStyle, textAnimatedStyle]}>
+      <Text style={[textStyle, { color: textColor }]}>
         {tile.value}
-      </Animated.Text>
-    </AnimatedPressable>
+      </Text>
+    </Pressable>
   );
 };
 
@@ -148,7 +87,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: Colors.panel.default,
-    // Neumorphic shadow (light mode)
     shadowColor: Colors.neumorphic.light.shadowDark,
     shadowOffset: { width: 4, height: 4 },
     shadowOpacity: 0.3,
@@ -158,8 +96,10 @@ const styles = StyleSheet.create({
   tileDark: {
     backgroundColor: "rgba(255, 255, 255, 0.08)",
     borderColor: "rgba(255, 255, 255, 0.15)",
-    // Neumorphic shadow (dark mode)
     shadowColor: Colors.neumorphic.dark.shadowDark,
+  },
+  tileCorrect: {
+    transform: [{ scale: 1.05 }],
   },
   clearedTile: {
     borderRadius: BorderRadius.tile,
