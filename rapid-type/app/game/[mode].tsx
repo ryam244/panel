@@ -71,9 +71,9 @@ const GridBoard = ({
   }
 
   return (
-    <View className="items-center" style={{ gap }}>
+    <View style={{ gap }}>
       {rows.map((row, rowIndex) => (
-        <View key={rowIndex} className="flex-row" style={{ gap }}>
+        <View key={rowIndex} style={{ gap }}>
           {row.map((tile) => (
             <ShakeTile
               key={tile.id}
@@ -113,7 +113,7 @@ const TargetDisplay = ({
     const chars = sentence.split("");
     return (
       <View
-        className="rounded-2xl p-6 min-h-[120px] items-center justify-center"
+       
         style={{
           backgroundColor: Colors.background.stone + "66",
           borderWidth: 2,
@@ -121,7 +121,7 @@ const TargetDisplay = ({
         }}
       >
         <View
-          className="absolute -top-3 left-6 px-3 py-0.5 rounded-full"
+         
           style={{
             backgroundColor: Colors.background.paper,
             borderWidth: 1,
@@ -129,14 +129,14 @@ const TargetDisplay = ({
           }}
         >
           <Text
-            className="text-[10px] font-black uppercase tracking-tighter"
+           
             style={{ color: Colors.text.muted }}
           >
             {t("game.currentSentence")}
           </Text>
         </View>
         <Text
-          className="text-4xl font-black tracking-[0.15em] leading-relaxed text-center"
+         
           style={{ color: Colors.text.primary }}
         >
           {chars.map((char, i) => (
@@ -159,15 +159,15 @@ const TargetDisplay = ({
   // Find Number mode - large prominent target display
   if (mode === "FIND_NUMBER") {
     return (
-      <View className="items-center">
+      <View>
         <Text
-          className="text-[10px] font-black uppercase tracking-widest mb-3"
+         
           style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
         >
           {t("game.findThis")}
         </Text>
         <View
-          className="w-28 h-28 rounded-3xl items-center justify-center"
+         
           style={{
             backgroundColor: Colors.primary.default,
             shadowColor: Colors.primary.default,
@@ -177,10 +177,10 @@ const TargetDisplay = ({
             elevation: 8,
           }}
         >
-          <Text className="text-white text-6xl font-black">{currentTarget}</Text>
+          <Text>{currentTarget}</Text>
         </View>
         <Text
-          className="text-xs font-bold mt-3"
+         
           style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
         >
           🔍 {t("game.searchGrid")}
@@ -192,7 +192,7 @@ const TargetDisplay = ({
   // Default mode (Numbers, Alphabet) - compact target display
   return (
     <View
-      className="p-4 pr-6 rounded-[2rem] flex-row items-center gap-5"
+     
       style={{
         backgroundColor: isDarkMode
           ? "rgba(255, 255, 255, 0.05)"
@@ -208,22 +208,22 @@ const TargetDisplay = ({
         elevation: 6,
       }}
     >
-      <View className="items-end">
+      <View>
         <Text
-          className="text-[10px] font-black uppercase tracking-widest"
+         
           style={{ color: Colors.text.muted }}
         >
           {t("game.next")}
         </Text>
         <Text
-          className="text-[10px] font-bold"
+         
           style={{ color: Colors.text.muted + "80" }}
         >
           Target
         </Text>
       </View>
       <View
-        className="w-16 h-16 rounded-2xl items-center justify-center"
+       
         style={{
           backgroundColor: Colors.semantic.success,
           shadowColor: Colors.semantic.success,
@@ -233,7 +233,7 @@ const TargetDisplay = ({
           elevation: 4,
         }}
       >
-        <Text className="text-white text-3xl font-black">{currentTarget}</Text>
+        <Text>{currentTarget}</Text>
       </View>
     </View>
   );
@@ -280,11 +280,11 @@ const CountdownOverlay = ({
 
   return (
     <View
-      className="absolute inset-0 items-center justify-center z-50"
+     
       style={{ backgroundColor: Colors.overlay.backdrop }}
     >
       <Animated.Text
-        className="text-white text-[120px] font-black"
+       
         style={animatedStyle}
       >
         {currentCount === 0 ? t("countdown.go") : currentCount}
@@ -437,7 +437,7 @@ export default function GameScreen() {
 
   return (
     <SafeAreaView
-      className="flex-1"
+     
       style={{ backgroundColor: getBackgroundColor() }}
       edges={["top", "bottom"]}
     >
@@ -458,10 +458,10 @@ export default function GameScreen() {
       )}
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 pt-4">
+      <View>
         <Pressable
           onPress={handlePause}
-          className="w-11 h-11 items-center justify-center rounded-full active:scale-95"
+         
           style={{
             backgroundColor: isDarkMode
               ? "rgba(255, 255, 255, 0.08)"
@@ -491,7 +491,7 @@ export default function GameScreen() {
 
         <Pressable
           onPress={() => router.back()}
-          className="w-11 h-11 items-center justify-center rounded-full"
+         
           style={{
             backgroundColor: isDarkMode
               ? "rgba(255, 255, 255, 0.08)"
@@ -514,9 +514,9 @@ export default function GameScreen() {
       </View>
 
       {/* Main Content */}
-      <View className="flex-1 px-6 justify-center">
+      <View>
         {/* Target Display */}
-        <View className="mb-10 items-center">
+        <View>
           <TargetDisplay
             mode={mode}
             currentTarget={currentTarget?.value || ""}
@@ -540,9 +540,9 @@ export default function GameScreen() {
         />
 
         {/* Stats Panel */}
-        <View className="mt-10 flex-row gap-4">
+        <View>
           <View
-            className="flex-1 rounded-xl p-5 items-center"
+           
             style={{
               backgroundColor: isDarkMode
                 ? "rgba(255, 255, 255, 0.05)"
@@ -554,17 +554,17 @@ export default function GameScreen() {
             }}
           >
             <Text
-              className="text-[10px] font-black uppercase tracking-widest mb-2"
+             
               style={{ color: Colors.text.muted }}
             >
               {t("game.progress")}
             </Text>
             <View
-              className="w-full h-2 rounded-full overflow-hidden"
+             
               style={{ backgroundColor: isDarkMode ? "rgba(255,255,255,0.1)" : Colors.text.muted + "20" }}
             >
               <View
-                className="h-full rounded-full"
+               
                 style={{
                   width: `${progressPercent}%`,
                   backgroundColor: Colors.semantic.success,
@@ -572,7 +572,7 @@ export default function GameScreen() {
               />
             </View>
             <Text
-              className="text-xs font-bold mt-2.5"
+             
               style={{
                 color: isDarkMode ? Colors.text.darkSecondary : Colors.text.secondary,
               }}
@@ -582,7 +582,7 @@ export default function GameScreen() {
           </View>
 
           <View
-            className="flex-1 rounded-xl p-5 items-center"
+           
             style={{
               backgroundColor: isDarkMode
                 ? "rgba(255, 255, 255, 0.05)"
@@ -594,13 +594,13 @@ export default function GameScreen() {
             }}
           >
             <Text
-              className="text-[10px] font-black uppercase tracking-widest mb-1"
+             
               style={{ color: Colors.text.muted }}
             >
               {t("game.accuracy")}
             </Text>
             <Text
-              className="text-2xl font-black tracking-tight"
+             
               style={{
                 color: isDarkMode ? Colors.text.dark : Colors.text.primary,
               }}
@@ -612,18 +612,18 @@ export default function GameScreen() {
       </View>
 
       {/* Footer */}
-      <View className="p-10">
-        <View className="flex-row items-center justify-center gap-2">
+      <View>
+        <View>
           <View
-            className="w-2 h-2 rounded-full"
+           
             style={{ backgroundColor: Colors.semantic.success }}
           />
           <View
-            className="w-2 h-2 rounded-full"
+           
             style={{ backgroundColor: Colors.text.muted + "30" }}
           />
           <View
-            className="w-2 h-2 rounded-full"
+           
             style={{ backgroundColor: Colors.text.muted + "30" }}
           />
         </View>

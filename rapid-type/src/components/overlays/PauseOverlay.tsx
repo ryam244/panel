@@ -36,17 +36,17 @@ export const PauseOverlay = ({
     <Animated.View
       entering={FadeIn.duration(200)}
       exiting={FadeOut.duration(150)}
-      className="absolute inset-0 z-50"
+     
       style={{ backgroundColor: Colors.overlay.backdrop }}
     >
       <Animated.View
         entering={SlideInUp.duration(300).springify().damping(15)}
         exiting={SlideOutUp.duration(200)}
-        className="flex-1 items-center justify-center px-8"
+       
       >
         {/* Pause Card */}
         <View
-          className="w-full max-w-sm rounded-3xl p-8"
+         
           style={{
             backgroundColor: Colors.background.paper,
             shadowColor: "#000",
@@ -58,13 +58,13 @@ export const PauseOverlay = ({
         >
           {/* Title */}
           <Text
-            className="text-center text-3xl font-black mb-2"
+           
             style={{ color: Colors.text.primary }}
           >
             {t("pause.title")}
           </Text>
           <Text
-            className="text-center text-sm mb-8"
+           
             style={{ color: Colors.text.muted }}
           >
             {t("pause.subtitle")}
@@ -72,36 +72,36 @@ export const PauseOverlay = ({
 
           {/* Stats */}
           <View
-            className="flex-row justify-around mb-8 py-4 rounded-xl"
+           
             style={{ backgroundColor: Colors.background.panel }}
           >
-            <View className="items-center">
+            <View>
               <Text
-                className="text-xs font-bold uppercase tracking-widest mb-1"
+               
                 style={{ color: Colors.text.muted }}
               >
                 {t("pause.time")}
               </Text>
               <Text
-                className="text-xl font-black"
+               
                 style={{ color: Colors.text.primary }}
               >
                 {currentTime}
               </Text>
             </View>
             <View
-              className="w-px"
+             
               style={{ backgroundColor: Colors.border.light }}
             />
-            <View className="items-center">
+            <View>
               <Text
-                className="text-xs font-bold uppercase tracking-widest mb-1"
+               
                 style={{ color: Colors.text.muted }}
               >
                 {t("pause.progress")}
               </Text>
               <Text
-                className="text-xl font-black"
+               
                 style={{ color: Colors.text.primary }}
               >
                 {progress.current}/{progress.total}
@@ -112,7 +112,7 @@ export const PauseOverlay = ({
           {/* Buttons */}
           <Pressable
             onPress={onResume}
-            className="h-14 rounded-xl items-center justify-center mb-3"
+           
             style={{
               backgroundColor: Colors.primary.default,
               shadowColor: Colors.primary.default,
@@ -122,14 +122,14 @@ export const PauseOverlay = ({
               elevation: 4,
             }}
           >
-            <Text className="text-white text-lg font-bold">
+            <Text>
               {t("pause.resume")}
             </Text>
           </Pressable>
 
           <Pressable
             onPress={onRestart}
-            className="h-14 rounded-xl items-center justify-center mb-3"
+           
             style={{
               backgroundColor: Colors.background.panel,
               borderWidth: 1,
@@ -137,7 +137,7 @@ export const PauseOverlay = ({
             }}
           >
             <Text
-              className="text-lg font-bold"
+             
               style={{ color: Colors.text.primary }}
             >
               {t("pause.restart")}
@@ -146,13 +146,13 @@ export const PauseOverlay = ({
 
           <Pressable
             onPress={onQuit}
-            className="h-14 rounded-xl items-center justify-center"
+           
             style={{
               backgroundColor: "transparent",
             }}
           >
             <Text
-              className="text-lg font-semibold"
+             
               style={{ color: Colors.semantic.error }}
             >
               {t("pause.quit")}

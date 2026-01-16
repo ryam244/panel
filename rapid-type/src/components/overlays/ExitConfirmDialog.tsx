@@ -30,13 +30,13 @@ export const ExitConfirmDialog = ({
     <Animated.View
       entering={FadeIn.duration(150)}
       exiting={FadeOut.duration(100)}
-      className="absolute inset-0 z-50 items-center justify-center"
+     
       style={{ backgroundColor: Colors.overlay.backdrop }}
     >
       <Animated.View
         entering={ZoomIn.duration(200).springify().damping(12)}
         exiting={ZoomOut.duration(150)}
-        className="mx-8 w-full max-w-xs rounded-2xl p-6"
+       
         style={{
           backgroundColor: Colors.background.paper,
           shadowColor: "#000",
@@ -47,9 +47,9 @@ export const ExitConfirmDialog = ({
         }}
       >
         {/* Icon */}
-        <View className="items-center mb-4">
+        <View>
           <View
-            className="w-16 h-16 rounded-full items-center justify-center"
+           
             style={{ backgroundColor: Colors.semantic.warning + "20" }}
           >
             <Text style={{ fontSize: 32 }}>⚠️</Text>
@@ -58,7 +58,7 @@ export const ExitConfirmDialog = ({
 
         {/* Title */}
         <Text
-          className="text-center text-xl font-bold mb-2"
+         
           style={{ color: Colors.text.primary }}
         >
           {t("exitConfirm.title")}
@@ -66,17 +66,17 @@ export const ExitConfirmDialog = ({
 
         {/* Message */}
         <Text
-          className="text-center text-sm mb-6"
+         
           style={{ color: Colors.text.muted }}
         >
           {t("exitConfirm.message")}
         </Text>
 
         {/* Buttons */}
-        <View className="flex-row gap-3">
+        <View>
           <Pressable
             onPress={onCancel}
-            className="flex-1 h-12 rounded-xl items-center justify-center"
+           
             style={{
               backgroundColor: Colors.background.panel,
               borderWidth: 1,
@@ -84,7 +84,7 @@ export const ExitConfirmDialog = ({
             }}
           >
             <Text
-              className="font-bold"
+             
               style={{ color: Colors.text.primary }}
             >
               {t("exitConfirm.cancel")}
@@ -93,12 +93,12 @@ export const ExitConfirmDialog = ({
 
           <Pressable
             onPress={onConfirm}
-            className="flex-1 h-12 rounded-xl items-center justify-center"
+           
             style={{
               backgroundColor: Colors.semantic.error,
             }}
           >
-            <Text className="text-white font-bold">
+            <Text>
               {t("exitConfirm.confirm")}
             </Text>
           </Pressable>

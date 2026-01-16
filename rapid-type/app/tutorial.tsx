@@ -104,12 +104,12 @@ const SlideItem = ({
   return (
     <View
       style={{ width: SCREEN_WIDTH }}
-      className="items-center justify-center px-8"
+     
     >
-      <Animated.View style={animatedStyle} className="items-center">
+      <Animated.View style={animatedStyle}>
         {/* Icon Container */}
         <View
-          className="w-32 h-32 rounded-full items-center justify-center mb-8"
+         
           style={{ backgroundColor: item.color + "15" }}
         >
           {item.icon}
@@ -117,7 +117,7 @@ const SlideItem = ({
 
         {/* Title */}
         <Text
-          className="text-2xl font-black text-center mb-4"
+         
           style={{ color: Colors.text.primary }}
         >
           {t(item.titleKey)}
@@ -125,7 +125,7 @@ const SlideItem = ({
 
         {/* Description */}
         <Text
-          className="text-base text-center leading-6"
+         
           style={{ color: Colors.text.secondary }}
         >
           {t(item.descKey)}
@@ -143,7 +143,7 @@ const Pagination = ({
   totalSlides: number;
 }) => {
   return (
-    <View className="flex-row justify-center gap-2">
+    <View>
       {Array.from({ length: totalSlides }).map((_, index) => {
         const animatedStyle = useAnimatedStyle(() => {
           const inputRange = [
@@ -175,7 +175,7 @@ const Pagination = ({
         return (
           <Animated.View
             key={index}
-            className="h-2 rounded-full"
+           
             style={[
               { backgroundColor: Colors.primary.default },
               animatedStyle,
@@ -213,19 +213,19 @@ export default function TutorialScreen() {
 
   return (
     <SafeAreaView
-      className="flex-1"
+     
       style={{ backgroundColor: Colors.background.light }}
       edges={["top", "bottom"]}
     >
       {/* Skip Button */}
-      <View className="flex-row justify-end px-6 pt-4">
+      <View>
         <Pressable
           onPress={handleSkip}
-          className="px-4 py-2 rounded-full"
+         
           style={{ backgroundColor: Colors.text.muted + "20" }}
         >
           <Text
-            className="text-sm font-semibold"
+           
             style={{ color: Colors.text.muted }}
           >
             {t("tutorial.skip")}
@@ -234,7 +234,7 @@ export default function TutorialScreen() {
       </View>
 
       {/* Slides */}
-      <View className="flex-1 justify-center">
+      <View>
         <FlatList
           ref={flatListRef}
           data={slides}
@@ -259,16 +259,16 @@ export default function TutorialScreen() {
       </View>
 
       {/* Bottom Section */}
-      <View className="px-6 pb-8">
+      <View>
         {/* Pagination */}
-        <View className="mb-8">
+        <View>
           <Pagination scrollX={scrollX} totalSlides={slides.length} />
         </View>
 
         {/* Next/Done Button */}
         <Pressable
           onPress={handleNext}
-          className="h-14 rounded-xl items-center justify-center"
+         
           style={{
             backgroundColor: Colors.primary.default,
             shadowColor: Colors.primary.default,
@@ -278,7 +278,7 @@ export default function TutorialScreen() {
             elevation: 4,
           }}
         >
-          <Text className="text-white text-lg font-bold">
+          <Text>
             {isLastSlide ? t("tutorial.done") : t("tutorial.next")}
           </Text>
         </Pressable>

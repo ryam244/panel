@@ -3,7 +3,7 @@
  * User preferences and app settings
  */
 
-import { View, Text, Pressable, Switch } from "react-native";
+import { View, Text, Pressable, Switch, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useStore } from "../src/store";
@@ -26,30 +26,26 @@ const SettingRow = ({
   return (
     <Pressable
       onPress={onToggle}
-      className={`flex-row items-center justify-between p-4 rounded-xl ${
-        isDarkMode ? "bg-white/5" : "bg-white"
-      } mb-3`}
-      style={{
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
-        elevation: 1,
-      }}
+      style={[
+        styles.settingRow,
+        { backgroundColor: isDarkMode ? "rgba(255,255,255,0.05)" : "#fff" },
+      ]}
     >
-      <View className="flex-1 mr-4">
+      <View style={styles.settingContent}>
         <Text
-          className={`font-semibold text-base ${
-            isDarkMode ? "text-white" : "text-charcoal"
-          }`}
+          style={[
+            styles.settingLabel,
+            { color: isDarkMode ? "#fff" : Colors.text.primary },
+          ]}
         >
           {label}
         </Text>
         {description && (
           <Text
-            className={`text-sm mt-0.5 ${
-              isDarkMode ? "text-white/50" : "text-charcoal/50"
-            }`}
+            style={[
+              styles.settingDesc,
+              { color: isDarkMode ? "rgba(255,255,255,0.5)" : Colors.text.muted },
+            ]}
           >
             {description}
           </Text>
@@ -80,19 +76,24 @@ const StatsRow = ({
 
   return (
     <View
-      className={`flex-row items-center justify-between p-4 rounded-xl ${
-        isDarkMode ? "bg-white/5" : "bg-white"
-      } mb-3`}
+      style={[
+        styles.statsRow,
+        { backgroundColor: isDarkMode ? "rgba(255,255,255,0.05)" : "#fff" },
+      ]}
     >
       <Text
-        className={`font-medium ${
-          isDarkMode ? "text-white/70" : "text-charcoal/70"
-        }`}
+        style={[
+          styles.statsLabel,
+          { color: isDarkMode ? "rgba(255,255,255,0.7)" : Colors.text.muted },
+        ]}
       >
         {label}
       </Text>
       <Text
-        className={`font-bold ${isDarkMode ? "text-white" : "text-charcoal"}`}
+        style={[
+          styles.statsValue,
+          { color: isDarkMode ? "#fff" : Colors.text.primary },
+        ]}
       >
         {value}
       </Text>
@@ -109,7 +110,6 @@ export default function SettingsScreen() {
   const toggleHaptics = useStore((state) => state.toggleHaptics);
   const stats = useStore((state) => state.stats);
 
-  // Format play time
   const formatPlayTime = (ms: number): string => {
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -126,36 +126,41 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView
-      className={`flex-1 ${isDarkMode ? "bg-bg-dark" : "bg-bg-result"}`}
+      style={[
+        styles.container,
+        { backgroundColor: isDarkMode ? Colors.background.dark : Colors.background.light },
+      ]}
       edges={["top", "bottom"]}
     >
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 pt-4 pb-6">
-        <View className="w-10" />
+      <View style={styles.header}>
+        <View style={styles.headerSpacer} />
         <Text
-          className={`text-xl font-bold ${
-            isDarkMode ? "text-white" : "text-charcoal"
-          }`}
+          style={[
+            styles.headerTitle,
+            { color: isDarkMode ? "#fff" : Colors.text.primary },
+          ]}
         >
           Settings
         </Text>
         <Pressable
           onPress={() => router.back()}
-          className={`w-10 h-10 items-center justify-center rounded-full ${
-            isDarkMode ? "bg-white/10" : "bg-white"
-          } active:scale-95`}
+          style={[
+            styles.closeButton,
+            { backgroundColor: isDarkMode ? "rgba(255,255,255,0.1)" : "#fff" },
+          ]}
         >
-          <Text className={isDarkMode ? "text-white" : "text-charcoal"}>✕</Text>
+          <Text style={{ color: isDarkMode ? "#fff" : Colors.text.primary }}>✕</Text>
         </Pressable>
       </View>
 
       {/* Content */}
-      <View className="flex-1 px-6">
-        {/* Preferences Section */}
+      <View style={styles.content}>
         <Text
-          className={`text-xs font-bold uppercase tracking-widest mb-3 ${
-            isDarkMode ? "text-white/40" : "text-charcoal/40"
-          }`}
+          style={[
+            styles.sectionTitle,
+            { color: isDarkMode ? "rgba(255,255,255,0.4)" : Colors.text.muted },
+          ]}
         >
           Preferences
         </Text>
@@ -181,11 +186,12 @@ export default function SettingsScreen() {
           onToggle={toggleHaptics}
         />
 
-        {/* Stats Section */}
         <Text
-          className={`text-xs font-bold uppercase tracking-widest mt-8 mb-3 ${
-            isDarkMode ? "text-white/40" : "text-charcoal/40"
-          }`}
+          style={[
+            styles.sectionTitle,
+            styles.sectionTitleMargin,
+            { color: isDarkMode ? "rgba(255,255,255,0.4)" : Colors.text.muted },
+          ]}
         >
           Statistics
         </Text>
@@ -195,19 +201,20 @@ export default function SettingsScreen() {
         <StatsRow label="Current Streak" value={`${stats.currentStreak} days`} />
         <StatsRow label="Longest Streak" value={`${stats.longestStreak} days`} />
 
-        {/* App Info */}
-        <View className="mt-auto mb-8 items-center">
+        <View style={styles.appInfo}>
           <Text
-            className={`text-sm ${
-              isDarkMode ? "text-white/30" : "text-charcoal/30"
-            }`}
+            style={[
+              styles.appVersion,
+              { color: isDarkMode ? "rgba(255,255,255,0.3)" : Colors.text.muted },
+            ]}
           >
             Rapid Type v1.0.0
           </Text>
           <Text
-            className={`text-xs mt-1 ${
-              isDarkMode ? "text-white/20" : "text-charcoal/20"
-            }`}
+            style={[
+              styles.appTagline,
+              { color: isDarkMode ? "rgba(255,255,255,0.2)" : Colors.text.muted },
+            ]}
           >
             Master Your Reflexes
           </Text>
@@ -216,3 +223,98 @@ export default function SettingsScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 20,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  sectionTitleMargin: {
+    marginTop: 32,
+  },
+  settingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  settingContent: {
+    flex: 1,
+    marginRight: 16,
+  },
+  settingLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  settingDesc: {
+    fontSize: 14,
+    marginTop: 2,
+  },
+  statsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  statsLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  statsValue: {
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  appInfo: {
+    marginTop: "auto",
+    marginBottom: 32,
+    alignItems: "center",
+  },
+  appVersion: {
+    fontSize: 14,
+  },
+  appTagline: {
+    fontSize: 12,
+    marginTop: 4,
+  },
+});
