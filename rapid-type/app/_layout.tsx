@@ -11,8 +11,6 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useStore, useStoreHydration } from "../src/store";
 import { Colors } from "../src/constants";
 
-import "../global.css";
-
 export default function RootLayout() {
   const hasHydrated = useStoreHydration();
   const isDarkMode = useStore((state) => state.settings.isDarkMode);
