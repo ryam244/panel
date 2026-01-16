@@ -1,29 +1,12 @@
 /**
  * Zustand Store - Mojic
- * Global state management with MMKV persistence
+ * Global state management with AsyncStorage persistence
  */
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { MMKV } from "react-native-mmkv";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { GameMode, Difficulty, UserSettings, UserStats, HighScores } from "../types";
-
-// MMKV instance
-const storage = new MMKV({ id: "mojic-store" });
-
-// Custom storage adapter for Zustand
-const mmkvStorage = {
-  getItem: (name: string) => {
-    const value = storage.getString(name);
-    return value ?? null;
-  },
-  setItem: (name: string, value: string) => {
-    storage.set(name, value);
-  },
-  removeItem: (name: string) => {
-    storage.delete(name);
-  },
-};
 
 // Game History Entry
 export interface GameHistoryEntry {
@@ -368,7 +351,7 @@ export const useStore = create<AppStore>()(
     }),
     {
       name: "mojic-storage",
-      storage: createJSONStorage(() => mmkvStorage),
+      storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
       },
