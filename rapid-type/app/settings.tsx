@@ -8,6 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useStore } from "../src/store";
 import { Colors } from "../src/constants";
+import { t } from "../src/i18n";
 
 // Setting Row Component
 const SettingRow = ({
@@ -116,12 +117,12 @@ export default function SettingsScreen() {
     const hours = Math.floor(minutes / 60);
 
     if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
+      return `${hours}${t("time.hours")} ${minutes % 60}${t("time.minutes")}`;
     }
     if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
+      return `${minutes}${t("time.minutes")} ${seconds % 60}${t("time.seconds")}`;
     }
-    return `${seconds}s`;
+    return `${seconds}${t("time.seconds")}`;
   };
 
   return (
@@ -141,7 +142,7 @@ export default function SettingsScreen() {
             { color: isDarkMode ? "#fff" : Colors.text.primary },
           ]}
         >
-          Settings
+          {t("settings.title")}
         </Text>
         <Pressable
           onPress={() => router.back()}
@@ -162,26 +163,26 @@ export default function SettingsScreen() {
             { color: isDarkMode ? "rgba(255,255,255,0.4)" : Colors.text.muted },
           ]}
         >
-          Preferences
+          {t("settings.preferences")}
         </Text>
 
         <SettingRow
-          label="Dark Mode"
-          description="Reduce eye strain in low light"
+          label={t("settings.darkMode")}
+          description={t("settings.darkModeDesc")}
           value={isDarkMode}
           onToggle={toggleDarkMode}
         />
 
         <SettingRow
-          label="Sound Effects"
-          description="Play sounds on tap and clear"
+          label={t("settings.sound")}
+          description={t("settings.soundDesc")}
           value={isSoundEnabled}
           onToggle={toggleSound}
         />
 
         <SettingRow
-          label="Haptic Feedback"
-          description="Vibrate on tap and events"
+          label={t("settings.haptics")}
+          description={t("settings.hapticsDesc")}
           value={isHapticsEnabled}
           onToggle={toggleHaptics}
         />
@@ -193,13 +194,13 @@ export default function SettingsScreen() {
             { color: isDarkMode ? "rgba(255,255,255,0.4)" : Colors.text.muted },
           ]}
         >
-          Statistics
+          {t("settings.statistics")}
         </Text>
 
-        <StatsRow label="Games Played" value={stats.totalGamesPlayed} />
-        <StatsRow label="Total Play Time" value={formatPlayTime(stats.totalPlayTime)} />
-        <StatsRow label="Current Streak" value={`${stats.currentStreak} days`} />
-        <StatsRow label="Longest Streak" value={`${stats.longestStreak} days`} />
+        <StatsRow label={t("settings.gamesPlayed")} value={stats.totalGamesPlayed} />
+        <StatsRow label={t("settings.totalPlayTime")} value={formatPlayTime(stats.totalPlayTime)} />
+        <StatsRow label={t("settings.currentStreak")} value={`${stats.currentStreak} ${t("settings.days")}`} />
+        <StatsRow label={t("settings.longestStreak")} value={`${stats.longestStreak} ${t("settings.days")}`} />
 
         <View style={styles.appInfo}>
           <Text
@@ -208,7 +209,7 @@ export default function SettingsScreen() {
               { color: isDarkMode ? "rgba(255,255,255,0.3)" : Colors.text.muted },
             ]}
           >
-            Rapid Type v1.0.0
+            Mojic v1.0.0
           </Text>
           <Text
             style={[
@@ -216,7 +217,7 @@ export default function SettingsScreen() {
               { color: isDarkMode ? "rgba(255,255,255,0.2)" : Colors.text.muted },
             ]}
           >
-            Master Your Reflexes
+            {t("app.tagline")}
           </Text>
         </View>
       </View>

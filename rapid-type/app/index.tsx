@@ -4,36 +4,41 @@
  */
 
 import { useState, useEffect } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
+import {
+  Hash,
+  Type,
+  FileText,
+  Search,
+  Zap,
+  BarChart2,
+  Settings,
+  Trophy,
+  ChevronRight,
+} from "lucide-react-native";
 import { useStore } from "../src/store";
 import { useSounds } from "../src/hooks";
 import { Colors, ModeInfo, DifficultyInfo } from "../src/constants";
 import { t, isJapanese } from "../src/i18n";
 import type { GameMode, Difficulty } from "../src/types";
 
-// Icon component
+// Icon component using lucide
 const ModeIcon = ({ mode, isSelected }: { mode: GameMode; isSelected: boolean }) => {
-  const icons: Record<GameMode, string> = {
-    NUMBERS: "123",
-    ALPHABET: "ABC",
-    SENTENCE: "文",
-    FIND_NUMBER: "🔍",
-    FLASH: "⚡",
+  const iconColor = isSelected ? "#fff" : Colors.primary.default;
+  const iconSize = 22;
+  const strokeWidth = 1.5;
+
+  const icons: Record<GameMode, React.ReactNode> = {
+    NUMBERS: <Hash size={iconSize} color={iconColor} strokeWidth={strokeWidth} />,
+    ALPHABET: <Type size={iconSize} color={iconColor} strokeWidth={strokeWidth} />,
+    SENTENCE: <FileText size={iconSize} color={iconColor} strokeWidth={strokeWidth} />,
+    FIND_NUMBER: <Search size={iconSize} color={iconColor} strokeWidth={strokeWidth} />,
+    FLASH: <Zap size={iconSize} color={iconColor} strokeWidth={strokeWidth} />,
   };
 
-  return (
-    <Text
-      style={{
-        fontSize: 18,
-        fontWeight: "800",
-        color: isSelected ? "#fff" : Colors.primary.default,
-      }}
-    >
-      {icons[mode]}
-    </Text>
-  );
+  return <>{icons[mode]}</>;
 };
 
 // Mode Card Component
@@ -61,88 +66,45 @@ const ModeCard = ({
   return (
     <Pressable
       onPress={onPress}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: 20,
-        borderRadius: 16,
-        backgroundColor: isSelected
-          ? Colors.primary.default + "20"
-          : isDarkMode
-            ? "rgba(255, 255, 255, 0.05)"
-            : Colors.background.panel,
-        borderWidth: isSelected ? 2 : 1,
-        borderColor: isSelected
-          ? Colors.primary.default
-          : isDarkMode
-            ? "rgba(255, 255, 255, 0.1)"
-            : Colors.border.primary,
-        shadowColor: isSelected ? Colors.primary.default : "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: isSelected ? 0.2 : 0.05,
-        shadowRadius: 4,
-        elevation: isSelected ? 4 : 1,
-      }}
+      style={[
+        styles.modeCard,
+        isSelected && styles.modeCardSelected,
+        isDarkMode && styles.modeCardDark,
+        isSelected && isDarkMode && styles.modeCardSelectedDark,
+      ]}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+      <View style={styles.modeCardContent}>
         <View
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: isSelected
-              ? Colors.primary.default
-              : isDarkMode
-                ? "rgba(255, 255, 255, 0.1)"
-                : "#fff",
-          }}
+          style={[
+            styles.modeIconContainer,
+            isSelected && styles.modeIconContainerSelected,
+            isDarkMode && styles.modeIconContainerDark,
+          ]}
         >
           <ModeIcon mode={mode} isSelected={isSelected} />
         </View>
         <Text
-          style={{
-            fontSize: 18,
-            fontWeight: "700",
-            color: isDarkMode ? Colors.text.dark : Colors.text.primary,
-          }}
+          style={[
+            styles.modeCardTitle,
+            isDarkMode && styles.modeCardTitleDark,
+          ]}
         >
           {modeNames[mode]}
         </Text>
       </View>
 
       {isSelected ? (
-        <View
-          style={{
-            backgroundColor: Colors.primary.default,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 12,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 10,
-              color: "#fff",
-              fontWeight: "700",
-              textTransform: "uppercase",
-              letterSpacing: 1,
-            }}
-          >
+        <View style={styles.activeBadge}>
+          <Text style={styles.activeBadgeText}>
             {t("home.active")}
           </Text>
         </View>
       ) : (
-        <Text
-          style={{
-            fontSize: 24,
-            color: isDarkMode ? "rgba(255,255,255,0.3)" : Colors.text.muted,
-          }}
-        >
-          {">"}
-        </Text>
+        <ChevronRight
+          size={24}
+          color={isDarkMode ? "rgba(255,255,255,0.3)" : Colors.text.muted}
+          strokeWidth={1.5}
+        />
       )}
     </Pressable>
   );
@@ -170,33 +132,18 @@ const DifficultyButton = ({
   return (
     <Pressable
       onPress={onPress}
-      style={{
-        flex: 1,
-        paddingVertical: 14,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: isSelected
-          ? Colors.primary.default
-          : isDarkMode
-            ? "rgba(255, 255, 255, 0.05)"
-            : Colors.background.panel,
-        borderWidth: isSelected ? 0 : 1,
-        borderColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.1)"
-          : Colors.border.ui,
-      }}
+      style={[
+        styles.difficultyButton,
+        isSelected && styles.difficultyButtonSelected,
+        isDarkMode && styles.difficultyButtonDark,
+      ]}
     >
       <Text
-        style={{
-          fontWeight: "700",
-          fontSize: 14,
-          color: isSelected
-            ? "#fff"
-            : isDarkMode
-              ? Colors.text.dark
-              : Colors.text.primary,
-        }}
+        style={[
+          styles.difficultyButtonText,
+          isSelected && styles.difficultyButtonTextSelected,
+          isDarkMode && styles.difficultyButtonTextDark,
+        ]}
       >
         {diffNames[difficulty]}
       </Text>
@@ -212,55 +159,50 @@ const DarkModeToggle = () => {
   return (
     <Pressable
       onPress={toggleDarkMode}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        backgroundColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.08)"
-          : "rgba(255, 255, 255, 0.7)",
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.1)"
-          : Colors.border.light,
-      }}
+      style={[styles.darkModeToggle, isDarkMode && styles.darkModeToggleDark]}
     >
       <Text
-        style={{
-          fontSize: 12,
-          fontWeight: "700",
-          color: isDarkMode ? Colors.text.darkSecondary : Colors.text.secondary,
-          textTransform: "uppercase",
-          letterSpacing: 0.5,
-        }}
+        style={[styles.darkModeLabel, isDarkMode && styles.darkModeLabelDark]}
       >
         {t("home.darkMode")}
       </Text>
       <View
-        style={{
-          width: 44,
-          height: 24,
-          borderRadius: 12,
-          backgroundColor: isDarkMode
-            ? Colors.primary.default
-            : Colors.text.muted + "40",
-          justifyContent: "center",
-          paddingHorizontal: 2,
-        }}
+        style={[
+          styles.toggleTrack,
+          isDarkMode && styles.toggleTrackActive,
+        ]}
       >
         <View
-          style={{
-            width: 20,
-            height: 20,
-            borderRadius: 10,
-            backgroundColor: "#fff",
-            alignSelf: isDarkMode ? "flex-end" : "flex-start",
-          }}
+          style={[
+            styles.toggleThumb,
+            isDarkMode && styles.toggleThumbActive,
+          ]}
         />
       </View>
+    </Pressable>
+  );
+};
+
+// Nav Item Component
+const NavItem = ({
+  icon,
+  label,
+  onPress,
+  isDarkMode,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onPress: () => void;
+  isDarkMode: boolean;
+}) => {
+  return (
+    <Pressable style={styles.navItem} onPress={onPress}>
+      <View style={styles.navIconContainer}>
+        {icon}
+      </View>
+      <Text style={[styles.navLabel, isDarkMode && styles.navLabelDark]}>
+        {label}
+      </Text>
     </Pressable>
   );
 };
@@ -290,96 +232,42 @@ export default function HomeScreen() {
   // MVP: Show 4 modes (including Find Number)
   const mvpModes: GameMode[] = ["NUMBERS", "ALPHABET", "SENTENCE", "FIND_NUMBER"];
 
+  const navIconColor = isDarkMode ? Colors.text.darkSecondary : Colors.text.muted;
+
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: isDarkMode
-          ? Colors.background.dark
-          : Colors.background.light,
-      }}
+      style={[styles.container, isDarkMode && styles.containerDark]}
       edges={["top"]}
     >
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          paddingHorizontal: 24,
-          paddingTop: 16,
-        }}
-      >
+      <View style={styles.header}>
         <DarkModeToggle />
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         {/* Title Section */}
-        <View style={{ alignItems: "center", marginTop: 32, marginBottom: 40 }}>
-          <View
-            style={{
-              width: 80,
-              height: 80,
-              backgroundColor: Colors.primary.default,
-              borderRadius: 20,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 16,
-              shadowColor: Colors.primary.default,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.3,
-              shadowRadius: 16,
-              elevation: 8,
-            }}
-          >
-            <Text style={{ color: "#fff", fontSize: 36, fontWeight: "900" }}>
-              M
-            </Text>
+        <View style={styles.titleSection}>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoText}>M</Text>
           </View>
-          <Text
-            style={{
-              fontSize: 48,
-              fontWeight: "900",
-              letterSpacing: -1,
-              color: isDarkMode ? Colors.text.dark : Colors.text.primary,
-            }}
-          >
+          <Text style={[styles.appTitle, isDarkMode && styles.appTitleDark]}>
             {t("app.name")}
           </Text>
-          <Text
-            style={{
-              color: Colors.primary.default,
-              fontWeight: "600",
-              letterSpacing: 2,
-              fontSize: 11,
-              textTransform: "uppercase",
-              marginTop: 8,
-            }}
-          >
+          <Text style={styles.tagline}>
             {t("app.tagline")}
           </Text>
         </View>
 
         {/* Mode Selection */}
-        <View style={{ marginBottom: 32 }}>
-          <Text
-            style={{
-              textAlign: "center",
-              fontSize: 11,
-              fontWeight: "700",
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              marginBottom: 16,
-              color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
-            }}
-          >
+        <View style={styles.modeSection}>
+          <Text style={[styles.sectionLabel, isDarkMode && styles.sectionLabelDark]}>
             {t("home.selectMode")}
           </Text>
-          <View style={{ gap: 16 }}>
+          <View style={styles.modeList}>
             {mvpModes.map((mode) => (
               <ModeCard
                 key={mode}
@@ -392,21 +280,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Difficulty Selection */}
-        <View style={{ marginBottom: 32 }}>
-          <Text
-            style={{
-              textAlign: "center",
-              fontSize: 11,
-              fontWeight: "700",
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              marginBottom: 16,
-              color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
-            }}
-          >
+        <View style={styles.difficultySection}>
+          <Text style={[styles.sectionLabel, isDarkMode && styles.sectionLabelDark]}>
             {t("home.difficulty")}
           </Text>
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={styles.difficultyList}>
             {(["EASY", "NORMAL", "HARD"] as Difficulty[]).map((diff) => (
               <DifficultyButton
                 key={diff}
@@ -420,84 +298,321 @@ export default function HomeScreen() {
       </ScrollView>
 
       {/* Footer Actions */}
-      <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+      <View style={styles.footer}>
         {/* Start Button */}
-        <Pressable
-          onPress={handleStartGame}
-          style={{
-            backgroundColor: Colors.primary.default,
-            height: 60,
-            borderRadius: 16,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            shadowColor: Colors.primary.default,
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.3,
-            shadowRadius: 16,
-            elevation: 8,
-          }}
-        >
-          <Text
-            style={{
-              color: "#fff",
-              fontSize: 18,
-              fontWeight: "800",
-              letterSpacing: 1,
-            }}
-          >
+        <Pressable onPress={handleStartGame} style={styles.startButton}>
+          <Text style={styles.startButtonText}>
             {t("home.startGame")}
           </Text>
         </Pressable>
 
         {/* Bottom Nav */}
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            paddingHorizontal: 32,
-            marginTop: 24,
-          }}
-        >
-          {[
-            { icon: "📊", label: t("home.scores") },
-            { icon: "⚙️", label: t("home.settings") },
-            { icon: "🏆", label: t("home.awards") },
-          ].map((item) => (
-            <Pressable
-              key={item.label}
-              style={{ alignItems: "center", gap: 4 }}
-              onPress={() => {
-                if (item.label === t("home.settings")) {
-                  router.push("/settings");
-                } else if (item.label === t("home.scores")) {
-                  router.push("/stats");
-                } else if (item.label === t("home.awards")) {
-                  router.push("/achievements");
-                }
-              }}
-            >
-              <View style={{ padding: 8, borderRadius: 20 }}>
-                <Text style={{ fontSize: 20 }}>{item.icon}</Text>
-              </View>
-              <Text
-                style={{
-                  fontSize: 10,
-                  fontWeight: "700",
-                  textTransform: "uppercase",
-                  letterSpacing: 0.5,
-                  color: isDarkMode
-                    ? Colors.text.darkSecondary
-                    : Colors.text.muted,
-                }}
-              >
-                {item.label}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.bottomNav}>
+          <NavItem
+            icon={<BarChart2 size={20} color={navIconColor} strokeWidth={1.5} />}
+            label={t("home.scores")}
+            onPress={() => router.push("/stats")}
+            isDarkMode={isDarkMode}
+          />
+          <NavItem
+            icon={<Settings size={20} color={navIconColor} strokeWidth={1.5} />}
+            label={t("home.settings")}
+            onPress={() => router.push("/settings")}
+            isDarkMode={isDarkMode}
+          />
+          <NavItem
+            icon={<Trophy size={20} color={navIconColor} strokeWidth={1.5} />}
+            label={t("home.awards")}
+            onPress={() => router.push("/achievements")}
+            isDarkMode={isDarkMode}
+          />
         </View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background.light,
+  },
+  containerDark: {
+    backgroundColor: Colors.background.dark,
+  },
+  // Header
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+  // Dark Mode Toggle
+  darkModeToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.7)",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: Colors.border.light,
+  },
+  darkModeToggleDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  darkModeLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: Colors.text.secondary,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  darkModeLabelDark: {
+    color: Colors.text.darkSecondary,
+  },
+  toggleTrack: {
+    width: 44,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.text.muted + "40",
+    justifyContent: "center",
+    paddingHorizontal: 2,
+  },
+  toggleTrackActive: {
+    backgroundColor: Colors.primary.default,
+  },
+  toggleThumb: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    alignSelf: "flex-start",
+  },
+  toggleThumbActive: {
+    alignSelf: "flex-end",
+  },
+  // ScrollView
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  // Title Section
+  titleSection: {
+    alignItems: "center",
+    marginTop: 32,
+    marginBottom: 40,
+  },
+  logoContainer: {
+    width: 80,
+    height: 80,
+    backgroundColor: Colors.primary.default,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+    shadowColor: Colors.primary.default,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  logoText: {
+    color: "#fff",
+    fontSize: 36,
+    fontWeight: "900",
+  },
+  appTitle: {
+    fontSize: 48,
+    fontWeight: "900",
+    letterSpacing: -1,
+    color: Colors.text.primary,
+  },
+  appTitleDark: {
+    color: Colors.text.dark,
+  },
+  tagline: {
+    color: Colors.primary.default,
+    fontWeight: "600",
+    letterSpacing: 2,
+    fontSize: 11,
+    textTransform: "uppercase",
+    marginTop: 8,
+  },
+  // Section Label
+  sectionLabel: {
+    textAlign: "center",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+    marginBottom: 16,
+    color: Colors.text.muted,
+  },
+  sectionLabelDark: {
+    color: Colors.text.darkSecondary,
+  },
+  // Mode Section
+  modeSection: {
+    marginBottom: 32,
+  },
+  modeList: {
+    gap: 12,
+  },
+  modeCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderRadius: 16,
+    backgroundColor: Colors.background.panel,
+    borderWidth: 1,
+    borderColor: Colors.border.primary,
+  },
+  modeCardSelected: {
+    backgroundColor: Colors.primary.default + "15",
+    borderWidth: 2,
+    borderColor: Colors.primary.default,
+  },
+  modeCardDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  modeCardSelectedDark: {
+    backgroundColor: Colors.primary.default + "20",
+    borderColor: Colors.primary.default,
+  },
+  modeCardContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  modeIconContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+  },
+  modeIconContainerSelected: {
+    backgroundColor: Colors.primary.default,
+  },
+  modeIconContainerDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  modeCardTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: Colors.text.primary,
+  },
+  modeCardTitleDark: {
+    color: Colors.text.dark,
+  },
+  activeBadge: {
+    backgroundColor: Colors.primary.default,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  activeBadgeText: {
+    fontSize: 10,
+    color: "#fff",
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  // Difficulty Section
+  difficultySection: {
+    marginBottom: 32,
+  },
+  difficultyList: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  difficultyButton: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.background.panel,
+    borderWidth: 1,
+    borderColor: Colors.border.ui,
+  },
+  difficultyButtonSelected: {
+    backgroundColor: Colors.primary.default,
+    borderWidth: 0,
+  },
+  difficultyButtonDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  difficultyButtonText: {
+    fontWeight: "700",
+    fontSize: 14,
+    color: Colors.text.primary,
+  },
+  difficultyButtonTextSelected: {
+    color: "#fff",
+  },
+  difficultyButtonTextDark: {
+    color: Colors.text.dark,
+  },
+  // Footer
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 32,
+  },
+  startButton: {
+    backgroundColor: Colors.primary.default,
+    height: 60,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    shadowColor: Colors.primary.default,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  startButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  // Bottom Nav
+  bottomNav: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    paddingHorizontal: 16,
+    marginTop: 24,
+  },
+  navItem: {
+    alignItems: "center",
+    gap: 4,
+  },
+  navIconContainer: {
+    padding: 8,
+    borderRadius: 20,
+  },
+  navLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    color: Colors.text.muted,
+  },
+  navLabelDark: {
+    color: Colors.text.darkSecondary,
+  },
+});

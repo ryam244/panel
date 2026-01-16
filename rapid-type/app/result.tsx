@@ -4,12 +4,13 @@
  */
 
 import { useEffect, useRef } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, router } from "expo-router";
 import { useStore, ACHIEVEMENT_IDS } from "../src/store";
 import { Colors } from "../src/constants";
 import { formatTime, formatTimeDiff } from "../src/lib";
+import { t } from "../src/i18n";
 import type { GameResult } from "../src/types";
 
 // Stats Card Component
@@ -18,67 +19,31 @@ const StatsCard = ({
   value,
   subValue,
   variant = "default",
+  isDarkMode,
 }: {
   label: string;
   value: string | number;
   subValue?: string;
   variant?: "default" | "highlight" | "primary";
+  isDarkMode: boolean;
 }) => {
-  const valueColorClass = {
-    default: "text-charcoal",
-    highlight: "text-warning",
-    primary: "text-primary",
+  const valueColor = {
+    default: isDarkMode ? "#fff" : Colors.text.primary,
+    highlight: Colors.semantic.warning,
+    primary: Colors.primary.default,
   }[variant];
 
-  const valueSizeClass = variant === "primary" ? "text-3xl" : "text-2xl";
-
   return (
-    <View>
-      <Text>
+    <View style={[styles.statsCard, isDarkMode && styles.statsCardDark]}>
+      <Text style={[styles.statsCardLabel, isDarkMode && styles.statsCardLabelDark]}>
         {label}
       </Text>
-      <Text style={{ fontSize: variant === "primary" ? 30 : 24, fontWeight: "bold", color: variant === "highlight" ? Colors.semantic.warning : variant === "primary" ? Colors.primary.default : Colors.text.primary }}>
+      <Text style={[styles.statsCardValue, { color: valueColor }]}>
         {value}
       </Text>
       {subValue && (
-        <Text>{subValue}</Text>
+        <Text style={styles.statsCardSubValue}>{subValue}</Text>
       )}
-    </View>
-  );
-};
-
-// Consistency Graph (simplified SVG representation)
-const ConsistencyGraph = ({ tps }: { tps: number }) => {
-  return (
-    <View>
-      <View>
-        <View>
-          <Text>Tap Consistency</Text>
-          <Text>
-            Performance stability profile
-          </Text>
-        </View>
-        <View>
-          <Text>{tps}</Text>
-          <Text>
-            TPS
-          </Text>
-        </View>
-      </View>
-
-      {/* Simplified graph placeholder */}
-      <View>
-        <Text>Performance Graph</Text>
-      </View>
-
-      <View>
-        <Text>
-          Start
-        </Text>
-        <Text>
-          Finish
-        </Text>
-      </View>
     </View>
   );
 };
@@ -189,14 +154,18 @@ export default function ResultScreen() {
 
   if (!result) {
     return (
-      <SafeAreaView>
-        <Text>No result data</Text>
-        <Pressable
-          onPress={() => router.replace("/")}
-         
-        >
-          <Text>Go Home</Text>
-        </Pressable>
+      <SafeAreaView style={[styles.container, isDarkMode && styles.containerDark]}>
+        <View style={styles.errorContainer}>
+          <Text style={[styles.errorText, isDarkMode && styles.errorTextDark]}>
+            No result data
+          </Text>
+          <Pressable
+            onPress={() => router.replace("/")}
+            style={styles.homeButton}
+          >
+            <Text style={styles.homeButtonText}>{t("result.home")}</Text>
+          </Pressable>
+        </View>
       </SafeAreaView>
     );
   }
@@ -212,114 +181,370 @@ export default function ResultScreen() {
     });
   };
 
-  // Handle next level
-  const handleNextLevel = () => {
-    // For now, just go home
+  // Handle home
+  const handleHome = () => {
     router.replace("/");
   };
 
   // Rank color
   const rankColor = {
-    S: Colors.primary.default,
+    S: Colors.rank.S,
     A: Colors.semantic.teal,
     B: Colors.semantic.warning,
     C: Colors.neutral.gray,
   }[result.rank];
 
+  // Get rank message
+  const getRankMessage = () => {
+    switch (result.rank) {
+      case "S": return t("result.excellent");
+      case "A": return t("result.great");
+      case "B": return t("result.good");
+      default: return t("result.tryAgain");
+    }
+  };
+
   return (
-    <SafeAreaView edges={["top", "bottom"]}>
+    <SafeAreaView
+      style={[styles.container, isDarkMode && styles.containerDark]}
+      edges={["top", "bottom"]}
+    >
       {/* Header */}
-      <View>
+      <View style={styles.header}>
         <Pressable
-          onPress={() => router.replace("/")}
-         
+          onPress={handleHome}
+          style={[styles.closeButton, isDarkMode && styles.closeButtonDark]}
         >
-          <Text>✕</Text>
+          <Text style={[styles.closeButtonText, isDarkMode && styles.closeButtonTextDark]}>
+            ✕
+          </Text>
         </Pressable>
-        <Text>
-          Stage Cleared
+        <Text style={[styles.headerTitle, isDarkMode && styles.headerTitleDark]}>
+          {t("result.clear")}
         </Text>
-        <View />
+        <View style={styles.headerSpacer} />
       </View>
 
       {/* Main Content */}
-      <View>
+      <View style={styles.content}>
         {/* Clear Banner */}
-        <View>
-          <Text>
-            CLEAR!
+        <View style={styles.clearBanner}>
+          <Text style={[styles.clearText, { color: rankColor }]}>
+            {t("result.clear")}
           </Text>
-          <View>
-            <Text>★</Text>
-            <Text>
-              {result.rank === "S"
-                ? "Excellent Performance"
-                : result.rank === "A"
-                  ? "Great Job"
-                  : result.rank === "B"
-                    ? "Good Effort"
-                    : "Keep Practicing"}
+          <View style={[styles.rankBadge, isDarkMode && styles.rankBadgeDark]}>
+            <Text style={[styles.rankText, { color: rankColor }]}>
+              {result.rank}
             </Text>
           </View>
+          <Text style={[styles.rankMessage, isDarkMode && styles.rankMessageDark]}>
+            {getRankMessage()}
+          </Text>
         </View>
 
         {/* Final Time */}
-        <View>
-          <Text>
-            Final Time
+        <View style={[styles.timeCard, isDarkMode && styles.timeCardDark]}>
+          <Text style={[styles.timeLabel, isDarkMode && styles.timeLabelDark]}>
+            {t("result.finalTime")}
           </Text>
-          <Text>
+          <Text style={[styles.timeValue, isDarkMode && styles.timeValueDark]}>
             {formatTime(result.clearTime)}
           </Text>
         </View>
 
         {/* Stats Grid */}
-        <View>
+        <View style={styles.statsGrid}>
           <StatsCard
-            label="Record"
-            value={result.isNewRecord ? "New Best!" : "---"}
+            label={t("result.record")}
+            value={result.isNewRecord ? t("result.newBest") : "---"}
             subValue={
               result.isNewRecord && result.previousRecord
                 ? formatTimeDiff(result.clearTime - result.previousRecord)
                 : undefined
             }
             variant={result.isNewRecord ? "highlight" : "default"}
+            isDarkMode={isDarkMode}
           />
-          <StatsCard label="Accuracy" value={`${result.accuracy}%`} />
-          <StatsCard label="Rank" value={result.rank} variant="primary" />
+          <StatsCard
+            label={t("game.accuracy")}
+            value={`${result.accuracy}%`}
+            isDarkMode={isDarkMode}
+          />
+          <StatsCard
+            label={t("result.tps")}
+            value={result.tapsPerSecond.toFixed(1)}
+            isDarkMode={isDarkMode}
+          />
         </View>
-
-        {/* Consistency Graph */}
-        <ConsistencyGraph tps={result.tapsPerSecond} />
       </View>
 
       {/* Footer Actions */}
-      <View>
-        <View>
+      <View style={styles.footer}>
+        <View style={styles.actionButtons}>
           <Pressable
             onPress={handleRetry}
-           
+            style={[styles.retryButton, isDarkMode && styles.retryButtonDark]}
           >
-            <Text>↻</Text>
-            <Text>Retry</Text>
+            <Text style={[styles.retryButtonText, isDarkMode && styles.retryButtonTextDark]}>
+              {t("result.retry")}
+            </Text>
           </Pressable>
 
-          <Pressable
-            onPress={handleNextLevel}
-           
-          >
-            <Text>Next Level</Text>
-            <Text>→</Text>
+          <Pressable onPress={handleHome} style={styles.homeActionButton}>
+            <Text style={styles.homeActionButtonText}>
+              {t("result.home")}
+            </Text>
           </Pressable>
         </View>
-
-        <Pressable>
-          <Text>↗</Text>
-          <Text>
-            Share Results
-          </Text>
-        </Pressable>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.background.light,
+  },
+  containerDark: {
+    backgroundColor: Colors.background.dark,
+  },
+  // Header
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  closeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  closeButtonDark: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: Colors.text.primary,
+  },
+  closeButtonTextDark: {
+    color: "#fff",
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: Colors.text.primary,
+  },
+  headerTitleDark: {
+    color: "#fff",
+  },
+  headerSpacer: {
+    width: 40,
+  },
+  // Content
+  content: {
+    flex: 1,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  // Clear Banner
+  clearBanner: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
+  clearText: {
+    fontSize: 48,
+    fontWeight: "900",
+    marginBottom: 16,
+  },
+  rankBadge: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.background.paper,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  rankBadgeDark: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+  },
+  rankText: {
+    fontSize: 48,
+    fontWeight: "900",
+  },
+  rankMessage: {
+    fontSize: 16,
+    color: Colors.text.secondary,
+  },
+  rankMessageDark: {
+    color: Colors.text.darkSecondary,
+  },
+  // Time Card
+  timeCard: {
+    width: "100%",
+    backgroundColor: Colors.background.paper,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: "center",
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
+  },
+  timeCardDark: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  timeLabel: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: Colors.text.muted,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  timeLabelDark: {
+    color: Colors.text.darkSecondary,
+  },
+  timeValue: {
+    fontSize: 48,
+    fontWeight: "900",
+    color: Colors.text.primary,
+    fontVariant: ["tabular-nums"],
+  },
+  timeValueDark: {
+    color: "#fff",
+  },
+  // Stats Grid
+  statsGrid: {
+    flexDirection: "row",
+    gap: 12,
+    width: "100%",
+  },
+  statsCard: {
+    flex: 1,
+    backgroundColor: Colors.background.paper,
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statsCardDark: {
+    backgroundColor: "rgba(255,255,255,0.05)",
+  },
+  statsCardLabel: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: Colors.text.muted,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  statsCardLabelDark: {
+    color: Colors.text.darkSecondary,
+  },
+  statsCardValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  statsCardSubValue: {
+    fontSize: 12,
+    color: Colors.semantic.success,
+    marginTop: 4,
+  },
+  // Footer
+  footer: {
+    paddingHorizontal: 24,
+    paddingBottom: 24,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  retryButton: {
+    flex: 1,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: Colors.background.panel,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: Colors.border.ui,
+  },
+  retryButtonDark: {
+    backgroundColor: "rgba(255,255,255,0.1)",
+    borderColor: "rgba(255,255,255,0.2)",
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: Colors.text.primary,
+  },
+  retryButtonTextDark: {
+    color: "#fff",
+  },
+  homeActionButton: {
+    flex: 1,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: Colors.primary.default,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: Colors.primary.default,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  homeActionButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  // Error state
+  errorContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  errorText: {
+    fontSize: 16,
+    color: Colors.text.muted,
+    marginBottom: 16,
+  },
+  errorTextDark: {
+    color: Colors.text.darkSecondary,
+  },
+  homeButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    backgroundColor: Colors.primary.default,
+    borderRadius: 12,
+  },
+  homeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+});

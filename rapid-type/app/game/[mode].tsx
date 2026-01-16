@@ -49,8 +49,8 @@ const GridBoard = ({
   isDarkMode: boolean;
 }) => {
   const isSentence = mode === "SENTENCE";
-  const tileSize = isSentence ? 80 : 70;
-  const gap = isSentence ? 16 : 14;
+  const tileSize = isSentence ? 56 : 64;
+  const gap = isSentence ? 8 : 10;
 
   const sortedTiles = [...tiles].sort((a, b) => a.position - b.position);
 
@@ -60,9 +60,9 @@ const GridBoard = ({
   }
 
   return (
-    <View style={{ gap }}>
+    <View style={[styles.gridContainer, { gap }]}>
       {rows.map((row, rowIndex) => (
-        <View key={rowIndex} style={{ gap }}>
+        <View key={rowIndex} style={[styles.gridRow, { gap }]}>
           {row.map((tile) => (
             <ShakeTile
               key={tile.id}
@@ -83,146 +83,74 @@ const GridBoard = ({
   );
 };
 
-// Target Display Component
-const TargetDisplay = ({
-  mode,
-  currentTarget,
+// Target Display Component for Sentence Mode
+const SentenceTargetDisplay = ({
   sentence,
   currentIndex,
+}: {
+  sentence: string;
+  currentIndex: number;
+}) => {
+  const chars = sentence.split("");
+  return (
+    <View style={styles.sentenceContainer}>
+      <View style={styles.sentenceLabel}>
+        <Text style={styles.sentenceLabelText}>
+          {t("game.currentSentence")}
+        </Text>
+      </View>
+      <Text style={styles.sentenceText}>
+        {chars.map((char, i) => (
+          <Text
+            key={i}
+            style={{
+              color: i < currentIndex ? Colors.text.primary : Colors.text.muted + "60",
+              fontWeight: i === currentIndex ? "bold" : "normal",
+            }}
+          >
+            {char}
+          </Text>
+        ))}
+      </Text>
+    </View>
+  );
+};
+
+// Target Display Component for Find Number Mode
+const FindTargetDisplay = ({
+  currentTarget,
   isDarkMode,
 }: {
-  mode: GameMode;
   currentTarget: string;
-  sentence?: string;
-  currentIndex: number;
   isDarkMode: boolean;
 }) => {
-  // Sentence mode - show sentence with progress
-  if (mode === "SENTENCE" && sentence) {
-    const chars = sentence.split("");
-    return (
-      <View
-       
-        style={{
-          backgroundColor: Colors.background.stone + "66",
-          borderWidth: 2,
-          borderColor: Colors.border.accent,
-        }}
-      >
-        <View
-         
-          style={{
-            backgroundColor: Colors.background.paper,
-            borderWidth: 1,
-            borderColor: Colors.border.accent,
-          }}
-        >
-          <Text
-           
-            style={{ color: Colors.text.muted }}
-          >
-            {t("game.currentSentence")}
-          </Text>
-        </View>
-        <Text
-         
-          style={{ color: Colors.text.primary }}
-        >
-          {chars.map((char, i) => (
-            <Text
-              key={i}
-              style={{
-                color: i < currentIndex
-                  ? Colors.text.primary
-                  : Colors.text.muted + "40",
-              }}
-            >
-              {i < currentIndex ? char : "＿"}
-            </Text>
-          ))}
-        </Text>
-      </View>
-    );
-  }
-
-  // Find Number mode - large prominent target display
-  if (mode === "FIND_NUMBER") {
-    return (
-      <View>
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-        >
-          {t("game.findThis")}
-        </Text>
-        <View
-         
-          style={{
-            backgroundColor: Colors.primary.default,
-            shadowColor: Colors.primary.default,
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.4,
-            shadowRadius: 16,
-            elevation: 8,
-          }}
-        >
-          <Text>{currentTarget}</Text>
-        </View>
-        <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
-        >
-          🔍 {t("game.searchGrid")}
-        </Text>
-      </View>
-    );
-  }
-
-  // Default mode (Numbers, Alphabet) - compact target display
   return (
-    <View
-     
-      style={{
-        backgroundColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.05)"
-          : Colors.background.panel,
-        borderWidth: 1,
-        borderColor: isDarkMode
-          ? "rgba(255, 255, 255, 0.1)"
-          : Colors.border.ui,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 6,
-      }}
-    >
-      <View>
-        <Text
-         
-          style={{ color: Colors.text.muted }}
-        >
-          {t("game.next")}
-        </Text>
-        <Text
-         
-          style={{ color: Colors.text.muted + "80" }}
-        >
-          Target
-        </Text>
+    <View style={styles.findTargetContainer}>
+      <Text style={[styles.findLabel, isDarkMode && styles.findLabelDark]}>
+        {t("game.findThis")}
+      </Text>
+      <View style={styles.findTargetBadge}>
+        <Text style={styles.findTargetText}>{currentTarget}</Text>
       </View>
-      <View
-       
-        style={{
-          backgroundColor: Colors.semantic.success,
-          shadowColor: Colors.semantic.success,
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.3,
-          shadowRadius: 8,
-          elevation: 4,
-        }}
-      >
-        <Text>{currentTarget}</Text>
+    </View>
+  );
+};
+
+// Target Display Component for Numbers/Alphabet Mode
+const DefaultTargetDisplay = ({
+  currentTarget,
+  isDarkMode,
+}: {
+  currentTarget: string;
+  isDarkMode: boolean;
+}) => {
+  return (
+    <View style={[styles.targetContainer, isDarkMode && styles.targetContainerDark]}>
+      <View style={styles.targetLabelContainer}>
+        <Text style={styles.targetLabel}>{t("game.next")}</Text>
+      </View>
+      <View style={styles.targetBadge}>
+        <Text style={styles.targetBadgeText}>{currentTarget}</Text>
       </View>
     </View>
   );
@@ -259,32 +187,13 @@ const CountdownOverlay = ({
   if (currentCount <= 0) return null;
 
   return (
-    <View style={countdownStyles.overlay}>
-      <Text style={countdownStyles.text}>
+    <View style={styles.countdownOverlay}>
+      <Text style={styles.countdownText}>
         {currentCount}
       </Text>
     </View>
   );
 };
-
-const countdownStyles = StyleSheet.create({
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 100,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: Colors.overlay.backdrop,
-  },
-  text: {
-    fontSize: 120,
-    fontWeight: "900",
-    color: "#fff",
-  },
-});
 
 export default function GameScreen() {
   const params = useLocalSearchParams<{ mode: string; difficulty: string }>();
@@ -427,11 +336,12 @@ export default function GameScreen() {
 
   // Total time with penalty
   const displayTime = timeMs + (penaltyTotal * 1000);
+  const isSentenceMode = mode === "SENTENCE";
+  const effectiveIsDarkMode = isSentenceMode ? false : isDarkMode;
 
   return (
     <SafeAreaView
-     
-      style={{ backgroundColor: getBackgroundColor() }}
+      style={[styles.container, { backgroundColor: getBackgroundColor() }]}
       edges={["top", "bottom"]}
     >
       {/* Vignette Overlay */}
@@ -451,27 +361,16 @@ export default function GameScreen() {
       )}
 
       {/* Header */}
-      <View>
+      <View style={styles.header}>
         <Pressable
           onPress={handlePause}
-         
-          style={{
-            backgroundColor: isDarkMode
-              ? "rgba(255, 255, 255, 0.08)"
-              : Colors.background.panel,
-            borderWidth: 1,
-            borderColor: isDarkMode
-              ? "rgba(255, 255, 255, 0.1)"
-              : Colors.border.ui,
-          }}
+          style={[
+            styles.headerButton,
+            effectiveIsDarkMode && styles.headerButtonDark,
+          ]}
         >
-          <Text
-            style={{
-              color: isDarkMode ? Colors.text.dark : Colors.text.primary,
-              fontSize: 18,
-            }}
-          >
-            {isRunning ? "⏸" : "▶"}
+          <Text style={[styles.headerButtonText, effectiveIsDarkMode && styles.headerButtonTextDark]}>
+            {isRunning ? "||" : "▶"}
           </Text>
         </Pressable>
 
@@ -479,44 +378,42 @@ export default function GameScreen() {
           timeMs={displayTime}
           isRunning={isRunning}
           hasError={timerHasError}
-          isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
+          isDarkMode={effectiveIsDarkMode}
         />
 
         <Pressable
           onPress={() => router.back()}
-         
-          style={{
-            backgroundColor: isDarkMode
-              ? "rgba(255, 255, 255, 0.08)"
-              : Colors.background.panel,
-            borderWidth: 1,
-            borderColor: isDarkMode
-              ? "rgba(255, 255, 255, 0.1)"
-              : Colors.border.ui,
-          }}
+          style={[
+            styles.headerButton,
+            effectiveIsDarkMode && styles.headerButtonDark,
+          ]}
         >
-          <Text
-            style={{
-              color: isDarkMode ? Colors.text.dark : Colors.text.primary,
-              fontSize: 18,
-            }}
-          >
+          <Text style={[styles.headerButtonText, effectiveIsDarkMode && styles.headerButtonTextDark]}>
             ✕
           </Text>
         </Pressable>
       </View>
 
       {/* Main Content */}
-      <View>
+      <View style={styles.mainContent}>
         {/* Target Display */}
-        <View>
-          <TargetDisplay
-            mode={mode}
-            currentTarget={currentTarget?.value || ""}
-            sentence={session.targetSentence}
-            currentIndex={session.currentTargetIndex}
-            isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
-          />
+        <View style={styles.targetSection}>
+          {mode === "SENTENCE" && session.targetSentence ? (
+            <SentenceTargetDisplay
+              sentence={session.targetSentence}
+              currentIndex={session.currentTargetIndex}
+            />
+          ) : mode === "FIND_NUMBER" ? (
+            <FindTargetDisplay
+              currentTarget={currentTarget?.value || ""}
+              isDarkMode={effectiveIsDarkMode}
+            />
+          ) : (
+            <DefaultTargetDisplay
+              currentTarget={currentTarget?.value || ""}
+              isDarkMode={effectiveIsDarkMode}
+            />
+          )}
         </View>
 
         {/* Grid Board */}
@@ -529,75 +426,29 @@ export default function GameScreen() {
           mode={mode}
           errorTileId={errorTileId}
           correctTileId={correctTileId}
-          isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
+          isDarkMode={effectiveIsDarkMode}
         />
 
         {/* Stats Panel */}
-        <View>
-          <View
-           
-            style={{
-              backgroundColor: isDarkMode
-                ? "rgba(255, 255, 255, 0.05)"
-                : Colors.background.panel,
-              borderWidth: 1,
-              borderColor: isDarkMode
-                ? "rgba(255, 255, 255, 0.1)"
-                : Colors.border.ui,
-            }}
-          >
-            <Text
-             
-              style={{ color: Colors.text.muted }}
-            >
-              {t("game.progress")}
-            </Text>
-            <View
-             
-              style={{ backgroundColor: isDarkMode ? "rgba(255,255,255,0.1)" : Colors.text.muted + "20" }}
-            >
+        <View style={styles.statsPanel}>
+          <View style={[styles.statCard, effectiveIsDarkMode && styles.statCardDark]}>
+            <Text style={styles.statLabel}>{t("game.progress")}</Text>
+            <View style={[styles.progressBar, effectiveIsDarkMode && styles.progressBarDark]}>
               <View
-               
-                style={{
-                  width: `${progressPercent}%`,
-                  backgroundColor: Colors.semantic.success,
-                }}
+                style={[
+                  styles.progressFill,
+                  { width: `${progressPercent}%` },
+                ]}
               />
             </View>
-            <Text
-             
-              style={{
-                color: isDarkMode ? Colors.text.darkSecondary : Colors.text.secondary,
-              }}
-            >
+            <Text style={[styles.statValue, effectiveIsDarkMode && styles.statValueDark]}>
               {progress} / {total}
             </Text>
           </View>
 
-          <View
-           
-            style={{
-              backgroundColor: isDarkMode
-                ? "rgba(255, 255, 255, 0.05)"
-                : Colors.background.panel,
-              borderWidth: 1,
-              borderColor: isDarkMode
-                ? "rgba(255, 255, 255, 0.1)"
-                : Colors.border.ui,
-            }}
-          >
-            <Text
-             
-              style={{ color: Colors.text.muted }}
-            >
-              {t("game.accuracy")}
-            </Text>
-            <Text
-             
-              style={{
-                color: isDarkMode ? Colors.text.dark : Colors.text.primary,
-              }}
-            >
+          <View style={[styles.statCard, effectiveIsDarkMode && styles.statCardDark]}>
+            <Text style={styles.statLabel}>{t("game.accuracy")}</Text>
+            <Text style={[styles.statValueLarge, effectiveIsDarkMode && styles.statValueDark]}>
               {accuracy}%
             </Text>
           </View>
@@ -605,22 +456,263 @@ export default function GameScreen() {
       </View>
 
       {/* Footer */}
-      <View>
-        <View>
-          <View
-           
-            style={{ backgroundColor: Colors.semantic.success }}
-          />
-          <View
-           
-            style={{ backgroundColor: Colors.text.muted + "30" }}
-          />
-          <View
-           
-            style={{ backgroundColor: Colors.text.muted + "30" }}
-          />
+      <View style={styles.footer}>
+        <View style={styles.footerIndicators}>
+          <View style={[styles.footerDot, styles.footerDotActive]} />
+          <View style={styles.footerDot} />
+          <View style={styles.footerDot} />
         </View>
       </View>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  // Header
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  headerButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.background.panel,
+    borderWidth: 1,
+    borderColor: Colors.border.ui,
+  },
+  headerButtonDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  headerButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: Colors.text.primary,
+  },
+  headerButtonTextDark: {
+    color: Colors.text.dark,
+  },
+  // Main Content
+  mainContent: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  // Target Section
+  targetSection: {
+    marginBottom: 24,
+    width: "100%",
+    alignItems: "center",
+  },
+  // Sentence Target
+  sentenceContainer: {
+    width: "100%",
+    backgroundColor: Colors.background.paper,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.border.accent,
+  },
+  sentenceLabel: {
+    backgroundColor: Colors.primary.default + "20",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+    marginBottom: 12,
+  },
+  sentenceLabelText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: Colors.primary.default,
+  },
+  sentenceText: {
+    fontSize: 20,
+    lineHeight: 32,
+    color: Colors.text.primary,
+  },
+  // Find Target
+  findTargetContainer: {
+    alignItems: "center",
+  },
+  findLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.text.muted,
+    marginBottom: 8,
+  },
+  findLabelDark: {
+    color: Colors.text.darkSecondary,
+  },
+  findTargetBadge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.primary.default,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: Colors.primary.default,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  findTargetText: {
+    fontSize: 36,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  // Default Target
+  targetContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.background.panel,
+    borderRadius: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: Colors.border.ui,
+    gap: 16,
+  },
+  targetContainerDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  targetLabelContainer: {
+    alignItems: "center",
+  },
+  targetLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: Colors.text.muted,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  targetBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: Colors.semantic.success,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: Colors.semantic.success,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  targetBadgeText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  // Grid
+  gridContainer: {
+    alignItems: "center",
+  },
+  gridRow: {
+    flexDirection: "row",
+  },
+  // Stats Panel
+  statsPanel: {
+    flexDirection: "row",
+    marginTop: 24,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: Colors.background.panel,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: Colors.border.ui,
+    alignItems: "center",
+  },
+  statCardDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.05)",
+    borderColor: "rgba(255, 255, 255, 0.1)",
+  },
+  statLabel: {
+    fontSize: 10,
+    fontWeight: "bold",
+    color: Colors.text.muted,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: Colors.text.secondary,
+  },
+  statValueLarge: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: Colors.text.primary,
+  },
+  statValueDark: {
+    color: Colors.text.dark,
+  },
+  progressBar: {
+    width: "100%",
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.text.muted + "20",
+    marginBottom: 8,
+    overflow: "hidden",
+  },
+  progressBarDark: {
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: 3,
+    backgroundColor: Colors.semantic.success,
+  },
+  // Footer
+  footer: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  footerIndicators: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  footerDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.text.muted + "30",
+  },
+  footerDotActive: {
+    backgroundColor: Colors.semantic.success,
+    width: 24,
+  },
+  // Countdown
+  countdownOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 100,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Colors.overlay.backdrop,
+  },
+  countdownText: {
+    fontSize: 120,
+    fontWeight: "900",
+    color: "#fff",
+  },
+});
