@@ -33,15 +33,15 @@ const StatsCard = ({
   const valueSizeClass = variant === "primary" ? "text-3xl" : "text-2xl";
 
   return (
-    <View className="flex-1 bg-white border border-gray-200/50 rounded-ios p-4 items-center justify-center shadow-sm">
-      <Text className="text-[10px] font-bold text-charcoal/40 uppercase mb-2">
+    <View>
+      <Text>
         {label}
       </Text>
-      <Text className={`${valueSizeClass} font-bold ${valueColorClass}`}>
+      <Text style={{ fontSize: variant === "primary" ? 30 : 24, fontWeight: "bold", color: variant === "highlight" ? Colors.semantic.warning : variant === "primary" ? Colors.primary.default : Colors.text.primary }}>
         {value}
       </Text>
       {subValue && (
-        <Text className="text-[9px] text-charcoal/30 mt-1">{subValue}</Text>
+        <Text>{subValue}</Text>
       )}
     </View>
   );
@@ -50,32 +50,32 @@ const StatsCard = ({
 // Consistency Graph (simplified SVG representation)
 const ConsistencyGraph = ({ tps }: { tps: number }) => {
   return (
-    <View className="bg-white border border-gray-200/50 rounded-ios p-6 shadow-sm">
-      <View className="flex-row justify-between items-center mb-6">
+    <View>
+      <View>
         <View>
-          <Text className="text-sm font-bold text-charcoal">Tap Consistency</Text>
-          <Text className="text-[10px] text-charcoal/40">
+          <Text>Tap Consistency</Text>
+          <Text>
             Performance stability profile
           </Text>
         </View>
-        <View className="items-end">
-          <Text className="text-2xl font-extrabold text-teal">{tps}</Text>
-          <Text className="text-[10px] font-bold text-charcoal/40 uppercase">
+        <View>
+          <Text>{tps}</Text>
+          <Text>
             TPS
           </Text>
         </View>
       </View>
 
       {/* Simplified graph placeholder */}
-      <View className="h-28 w-full bg-gradient-to-r from-teal/10 to-primary/10 rounded-lg items-center justify-center">
-        <Text className="text-charcoal/20 text-xs">Performance Graph</Text>
+      <View>
+        <Text>Performance Graph</Text>
       </View>
 
-      <View className="flex-row justify-between mt-3">
-        <Text className="text-[9px] font-bold text-charcoal/20 uppercase tracking-widest">
+      <View>
+        <Text>
           Start
         </Text>
-        <Text className="text-[9px] font-bold text-charcoal/20 uppercase tracking-widest">
+        <Text>
           Finish
         </Text>
       </View>
@@ -189,13 +189,13 @@ export default function ResultScreen() {
 
   if (!result) {
     return (
-      <SafeAreaView className="flex-1 bg-bg-result items-center justify-center">
-        <Text className="text-charcoal">No result data</Text>
+      <SafeAreaView>
+        <Text>No result data</Text>
         <Pressable
           onPress={() => router.replace("/")}
-          className="mt-4 bg-primary px-6 py-3 rounded-ios"
+         
         >
-          <Text className="text-white font-bold">Go Home</Text>
+          <Text>Go Home</Text>
         </Pressable>
       </SafeAreaView>
     );
@@ -227,31 +227,31 @@ export default function ResultScreen() {
   }[result.rank];
 
   return (
-    <SafeAreaView className="flex-1 bg-bg-result" edges={["top", "bottom"]}>
+    <SafeAreaView edges={["top", "bottom"]}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 pt-4">
+      <View>
         <Pressable
           onPress={() => router.replace("/")}
-          className="w-10 h-10 items-center justify-center rounded-full bg-white border border-gray-100 active:scale-95 shadow-sm"
+         
         >
-          <Text className="text-charcoal text-lg">✕</Text>
+          <Text>✕</Text>
         </Pressable>
-        <Text className="uppercase tracking-widest text-[11px] font-bold text-charcoal/40">
+        <Text>
           Stage Cleared
         </Text>
-        <View className="w-10" />
+        <View />
       </View>
 
       {/* Main Content */}
-      <View className="flex-1 px-6">
+      <View>
         {/* Clear Banner */}
-        <View className="items-center mt-4">
-          <Text className="text-6xl font-extrabold tracking-tight text-warning mb-2">
+        <View>
+          <Text>
             CLEAR!
           </Text>
-          <View className="flex-row items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full">
-            <Text className="text-primary text-sm">★</Text>
-            <Text className="text-xs font-bold text-primary uppercase tracking-wider">
+          <View>
+            <Text>★</Text>
+            <Text>
               {result.rank === "S"
                 ? "Excellent Performance"
                 : result.rank === "A"
@@ -264,17 +264,17 @@ export default function ResultScreen() {
         </View>
 
         {/* Final Time */}
-        <View className="items-center justify-center my-10 py-6">
-          <Text className="text-charcoal/40 text-xs font-bold uppercase tracking-[0.2em] mb-4">
+        <View>
+          <Text>
             Final Time
           </Text>
-          <Text className="text-7xl font-extrabold text-charcoal tabular-nums tracking-tighter">
+          <Text>
             {formatTime(result.clearTime)}
           </Text>
         </View>
 
         {/* Stats Grid */}
-        <View className="flex-row gap-4 mb-8">
+        <View>
           <StatsCard
             label="Record"
             value={result.isNewRecord ? "New Best!" : "---"}
@@ -294,28 +294,28 @@ export default function ResultScreen() {
       </View>
 
       {/* Footer Actions */}
-      <View className="px-6 pb-8 gap-4">
-        <View className="flex-row gap-4">
+      <View>
+        <View>
           <Pressable
             onPress={handleRetry}
-            className="flex-1 bg-panel-silver h-16 rounded-ios items-center justify-center flex-row gap-2 active:scale-95"
+           
           >
-            <Text className="text-lg">↻</Text>
-            <Text className="font-bold text-charcoal">Retry</Text>
+            <Text>↻</Text>
+            <Text>Retry</Text>
           </Pressable>
 
           <Pressable
             onPress={handleNextLevel}
-            className="flex-[1.8] bg-primary h-16 rounded-ios items-center justify-center flex-row gap-2 active:scale-95 shadow-lg shadow-primary/20"
+           
           >
-            <Text className="font-bold text-white">Next Level</Text>
-            <Text className="text-white text-lg">→</Text>
+            <Text>Next Level</Text>
+            <Text>→</Text>
           </Pressable>
         </View>
 
-        <Pressable className="w-full py-4 items-center justify-center flex-row gap-2">
-          <Text className="text-charcoal/50 text-lg">↗</Text>
-          <Text className="text-charcoal/50 font-semibold text-sm">
+        <Pressable>
+          <Text>↗</Text>
+          <Text>
             Share Results
           </Text>
         </Pressable>

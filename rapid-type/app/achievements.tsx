@@ -123,7 +123,7 @@ const AchievementCard = ({
 
   return (
     <View
-      className="p-4 rounded-xl mb-3"
+     
       style={{
         backgroundColor: isDarkMode
           ? "rgba(255, 255, 255, 0.05)"
@@ -137,10 +137,10 @@ const AchievementCard = ({
         opacity: isUnlocked ? 1 : 0.6,
       }}
     >
-      <View className="flex-row items-start">
+      <View>
         {/* Icon */}
         <View
-          className="w-12 h-12 rounded-xl items-center justify-center mr-4"
+         
           style={{
             backgroundColor: isUnlocked
               ? Colors.primary.default + "20"
@@ -160,10 +160,10 @@ const AchievementCard = ({
         </View>
 
         {/* Content */}
-        <View className="flex-1">
-          <View className="flex-row items-center justify-between">
+        <View>
+          <View>
             <Text
-              className="font-bold text-base"
+             
               style={{
                 color: isDarkMode ? Colors.text.dark : Colors.text.primary,
               }}
@@ -172,17 +172,17 @@ const AchievementCard = ({
             </Text>
             {isUnlocked && (
               <View
-                className="px-2 py-0.5 rounded-full"
+               
                 style={{ backgroundColor: Colors.primary.default }}
               >
-                <Text className="text-[10px] font-bold text-white uppercase">
+                <Text>
                   {t("achievements.unlocked")}
                 </Text>
               </View>
             )}
           </View>
           <Text
-            className="text-sm mt-1"
+           
             style={{
               color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
             }}
@@ -192,9 +192,9 @@ const AchievementCard = ({
 
           {/* Progress bar */}
           {def.hasProgress && !isUnlocked && maxProgress > 0 && (
-            <View className="mt-3">
+            <View>
               <View
-                className="h-2 rounded-full overflow-hidden"
+               
                 style={{
                   backgroundColor: isDarkMode
                     ? "rgba(255, 255, 255, 0.1)"
@@ -202,7 +202,7 @@ const AchievementCard = ({
                 }}
               >
                 <View
-                  className="h-full rounded-full"
+                 
                   style={{
                     width: `${progressPercent}%`,
                     backgroundColor: Colors.primary.default,
@@ -210,7 +210,7 @@ const AchievementCard = ({
                 />
               </View>
               <Text
-                className="text-xs mt-1"
+               
                 style={{
                   color: isDarkMode
                     ? Colors.text.darkSecondary
@@ -225,7 +225,7 @@ const AchievementCard = ({
           {/* Unlocked date */}
           {isUnlocked && achievement?.unlockedAt && (
             <Text
-              className="text-xs mt-2"
+             
               style={{
                 color: isDarkMode
                   ? Colors.text.darkSecondary
@@ -253,7 +253,7 @@ export default function AchievementsScreen() {
 
   return (
     <SafeAreaView
-      className="flex-1"
+     
       style={{
         backgroundColor: isDarkMode
           ? Colors.background.dark
@@ -262,10 +262,10 @@ export default function AchievementsScreen() {
       edges={["top"]}
     >
       {/* Header */}
-      <View className="flex-row items-center px-6 py-4">
+      <View>
         <Pressable
           onPress={() => router.back()}
-          className="w-10 h-10 items-center justify-center rounded-full"
+         
           style={{
             backgroundColor: isDarkMode
               ? "rgba(255, 255, 255, 0.08)"
@@ -278,7 +278,7 @@ export default function AchievementsScreen() {
           />
         </Pressable>
         <Text
-          className="text-xl font-black ml-4"
+         
           style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
         >
           {t("achievements.title")}
@@ -286,40 +286,40 @@ export default function AchievementsScreen() {
       </View>
 
       {/* Progress summary */}
-      <View className="px-6 mb-6">
+      <View>
         <View
-          className="p-4 rounded-xl flex-row items-center justify-between"
+         
           style={{
             backgroundColor: Colors.primary.default + "15",
             borderWidth: 1,
             borderColor: Colors.primary.default + "30",
           }}
         >
-          <View className="flex-row items-center gap-3">
+          <View>
             <View
-              className="w-12 h-12 rounded-full items-center justify-center"
+             
               style={{ backgroundColor: Colors.primary.default }}
             >
               <Trophy size={24} color="#fff" />
             </View>
             <View>
               <Text
-                className="font-bold text-lg"
+               
                 style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
               >
                 {unlockedCount} / {totalCount}
               </Text>
               <Text
-                className="text-sm"
+               
                 style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
               >
                 {t("achievements.unlocked")}
               </Text>
             </View>
           </View>
-          <View className="items-end">
+          <View>
             <Text
-              className="font-black text-2xl"
+             
               style={{ color: Colors.primary.default }}
             >
               {Math.round((unlockedCount / totalCount) * 100)}%
@@ -329,7 +329,7 @@ export default function AchievementsScreen() {
       </View>
 
       <ScrollView
-        className="flex-1"
+       
         contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
