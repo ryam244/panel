@@ -87,6 +87,12 @@
       "expo-router",
       "expo-localization",
       [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "This identifier will be used to deliver personalized ads to you."
+        }
+      ],
+      [
         "react-native-google-mobile-ads",
         {
           "iosAppId": "ca-app-pub-6258470133022211~6887279803"

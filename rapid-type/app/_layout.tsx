@@ -3,17 +3,46 @@
  * Provides global context, fonts, and navigation structure
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useStore, useStoreHydration } from "../src/store";
 import { Colors } from "../src/constants";
+import { initializeAds } from "../src/lib/ads";
 
 export default function RootLayout() {
   const hasHydrated = useStoreHydration();
   const isDarkMode = useStore((state) => state.settings.isDarkMode);
+  const [adsInitialized, setAdsInitialized] = useState(false);
+
+  // Initialize ads SDK on app startup
+  useEffect(() => {
+    const initAds = async () => {
+      try {
+        // Request ATT permission on iOS before initializing ads
+        if (Platform.OS === "ios") {
+          try {
+            const { requestTrackingPermissionsAsync } = await import("expo-tracking-transparency");
+            await requestTrackingPermissionsAsync();
+          } catch (e) {
+            // ATT module not available, continue anyway
+            console.log("[Ads] ATT not available, continuing without tracking permission");
+          }
+        }
+
+        await initializeAds();
+        setAdsInitialized(true);
+      } catch (error) {
+        console.error("[Ads] Failed to initialize ads:", error);
+        // Continue app even if ads fail to initialize
+        setAdsInitialized(true);
+      }
+    };
+
+    initAds();
+  }, []);
 
   // Wait for store hydration
   if (!hasHydrated) {

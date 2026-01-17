@@ -73,7 +73,17 @@ export async function initializeAds(): Promise<void> {
     loadRewardedAd();
   } catch (error) {
     console.error("[Ads] Failed to initialize:", error);
+    // Mark as initialized anyway to prevent retry loops
+    // App should continue to work without ads
+    isInitialized = true;
   }
+}
+
+/**
+ * Check if ads SDK is initialized
+ */
+export function isAdsInitialized(): boolean {
+  return isInitialized;
 }
 
 // ================================================
@@ -86,6 +96,12 @@ export async function initializeAds(): Promise<void> {
 function loadRewardedAd(): void {
   if (!isInitialized) {
     console.warn("[Ads] Cannot load ad before initialization");
+    return;
+  }
+
+  // Prevent multiple simultaneous load attempts
+  if (rewardedAd) {
+    console.log("[Ads] Rewarded ad already exists, skipping load");
     return;
   }
 
@@ -120,11 +136,13 @@ function loadRewardedAd(): void {
       () => {
         console.log("[Ads] Rewarded ad closed");
         rewardedReady = false;
-        // Cleanup and reload
+        // Cleanup
         unsubscribeLoaded();
         unsubscribeEarned();
         unsubscribeClosed();
         unsubscribeError();
+        // Reset ad instance before reloading
+        rewardedAd = null;
         // Load next ad
         setTimeout(loadRewardedAd, 1000);
       }
@@ -140,6 +158,8 @@ function loadRewardedAd(): void {
         unsubscribeEarned();
         unsubscribeClosed();
         unsubscribeError();
+        // Reset ad instance before retrying
+        rewardedAd = null;
         // Retry after delay
         setTimeout(loadRewardedAd, 5000);
       }

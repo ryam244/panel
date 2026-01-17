@@ -6,40 +6,43 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   AdManager,
-  initializeAds,
   showInterstitialAd,
   showRewardedAd,
   isInterstitialReady,
   isRewardedReady,
-  createAdManagers,
+  isAdsInitialized,
 } from "../lib/ads";
 
 /**
  * Hook for managing ads in the app
  * Provides methods to show ads and check availability
+ * Note: Ads are initialized in _layout.tsx on app startup
  */
 export function useAds() {
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(isAdsInitialized());
   const [interstitialReady, setInterstitialReady] = useState(false);
   const [rewardedReady, setRewardedReady] = useState(false);
 
-  // Initialize ads on mount
+  // Check if already initialized
   useEffect(() => {
-    const init = async () => {
-      await initializeAds();
-      createAdManagers();
+    if (!isInitialized && isAdsInitialized()) {
       setIsInitialized(true);
-    };
-    init();
-  }, []);
+    }
+  }, [isInitialized]);
 
-  // Poll for ad readiness (simple approach)
+  // Poll for ad readiness and initialization status
   useEffect(() => {
-    if (!isInitialized) return;
-
     const checkReadiness = () => {
-      setInterstitialReady(isInterstitialReady());
-      setRewardedReady(isRewardedReady());
+      // Check initialization status
+      if (!isInitialized && isAdsInitialized()) {
+        setIsInitialized(true);
+      }
+
+      // Check ad readiness
+      if (isAdsInitialized()) {
+        setInterstitialReady(isInterstitialReady());
+        setRewardedReady(isRewardedReady());
+      }
     };
 
     // Check immediately
