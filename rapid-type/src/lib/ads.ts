@@ -1,96 +1,156 @@
 /**
  * Ad Manager - Mojic
- * Google Mobile Ads integration with test ads
+ * Google Mobile Ads integration with AdMob
  *
  * App ID: ca-app-pub-6258470133022211~6887279803
  *
- * In test mode, ads are simulated with delays.
- * In production mode, real AdMob ads would be shown.
+ * In development mode, uses test ad unit IDs.
+ * In production mode, uses real AdMob ad unit IDs.
  */
 
-// Test mode flag - set to false for production
-const IS_TEST_MODE = true;
+import {
+  RewardedAd,
+  RewardedAdEventType,
+  TestIds,
+  AdEventType,
+} from "react-native-google-mobile-ads";
+import mobileAds from "react-native-google-mobile-ads";
 
-// Simulated ad state
+// ================================================
+// CONFIGURATION
+// ================================================
+
+// Set to false for production release
+const IS_TEST_MODE = __DEV__;
+
+// AdMob App ID (configured in app.json plugin)
+const APP_ID = "ca-app-pub-6258470133022211~6887279803";
+
+// Ad Unit IDs
+// TODO: Replace with your production ad unit IDs before release
+const AD_UNIT_IDS = {
+  // Test IDs (used in development)
+  test: {
+    rewarded: TestIds.REWARDED,
+  },
+  // Production IDs (replace before release)
+  production: {
+    // Replace this with your actual rewarded ad unit ID
+    rewarded: "ca-app-pub-6258470133022211/XXXXXXXXXX",
+  },
+};
+
+// Get the appropriate ad unit ID based on mode
+const getRewardedAdUnitId = (): string => {
+  return IS_TEST_MODE ? AD_UNIT_IDS.test.rewarded : AD_UNIT_IDS.production.rewarded;
+};
+
+// ================================================
+// STATE
+// ================================================
+
 let isInitialized = false;
-let interstitialReady = false;
+let rewardedAd: RewardedAd | null = null;
 let rewardedReady = false;
+let rewardCallback: (() => void) | null = null;
+
+// ================================================
+// INITIALIZATION
+// ================================================
 
 /**
- * Initialize the ad SDK
+ * Initialize the Google Mobile Ads SDK
  */
 export async function initializeAds(): Promise<void> {
   if (isInitialized) return;
 
-  if (IS_TEST_MODE) {
-    // Simulate initialization delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+  try {
+    // Initialize the Mobile Ads SDK
+    await mobileAds().initialize();
     isInitialized = true;
-    console.log("[Ads] Initialized in test mode");
+    console.log(`[Ads] SDK initialized (${IS_TEST_MODE ? "TEST MODE" : "PRODUCTION"})`);
 
-    // Start loading mock ads
-    loadMockInterstitial();
-    loadMockRewarded();
+    // Start loading ads
+    loadRewardedAd();
+  } catch (error) {
+    console.error("[Ads] Failed to initialize:", error);
+  }
+}
+
+// ================================================
+// REWARDED AD
+// ================================================
+
+/**
+ * Load a rewarded ad
+ */
+function loadRewardedAd(): void {
+  if (!isInitialized) {
+    console.warn("[Ads] Cannot load ad before initialization");
     return;
   }
 
-  // Production initialization would go here
-  // import mobileAds from 'react-native-google-mobile-ads';
-  // await mobileAds().initialize();
-  isInitialized = true;
-}
+  try {
+    const adUnitId = getRewardedAdUnitId();
+    rewardedAd = RewardedAd.createForAdRequest(adUnitId, {
+      keywords: ["game", "puzzle", "brain training"],
+    });
 
-/**
- * Load mock interstitial ad (test mode)
- */
-function loadMockInterstitial(): void {
-  if (!IS_TEST_MODE) return;
+    // Set up event listeners
+    const unsubscribeLoaded = rewardedAd.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        rewardedReady = true;
+        console.log("[Ads] Rewarded ad loaded");
+      }
+    );
 
-  interstitialReady = false;
-  // Simulate ad load delay
-  setTimeout(() => {
-    interstitialReady = true;
-    console.log("[Ads] Mock interstitial ready");
-  }, 2000);
-}
+    const unsubscribeEarned = rewardedAd.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      (reward) => {
+        console.log("[Ads] User earned reward:", reward);
+        if (rewardCallback) {
+          rewardCallback();
+          rewardCallback = null;
+        }
+      }
+    );
 
-/**
- * Load mock rewarded ad (test mode)
- */
-function loadMockRewarded(): void {
-  if (!IS_TEST_MODE) return;
+    const unsubscribeClosed = rewardedAd.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        console.log("[Ads] Rewarded ad closed");
+        rewardedReady = false;
+        // Cleanup and reload
+        unsubscribeLoaded();
+        unsubscribeEarned();
+        unsubscribeClosed();
+        unsubscribeError();
+        // Load next ad
+        setTimeout(loadRewardedAd, 1000);
+      }
+    );
 
-  rewardedReady = false;
-  // Simulate ad load delay
-  setTimeout(() => {
-    rewardedReady = true;
-    console.log("[Ads] Mock rewarded ad ready");
-  }, 2500);
-}
+    const unsubscribeError = rewardedAd.addAdEventListener(
+      AdEventType.ERROR,
+      (error) => {
+        console.error("[Ads] Rewarded ad error:", error);
+        rewardedReady = false;
+        // Cleanup
+        unsubscribeLoaded();
+        unsubscribeEarned();
+        unsubscribeClosed();
+        unsubscribeError();
+        // Retry after delay
+        setTimeout(loadRewardedAd, 5000);
+      }
+    );
 
-/**
- * Show interstitial ad
- * @returns true if ad was shown, false if not ready
- */
-export async function showInterstitialAd(): Promise<boolean> {
-  if (!isInitialized || !interstitialReady) {
-    console.log("[Ads] Interstitial not ready");
-    return false;
+    // Start loading
+    rewardedAd.load();
+  } catch (error) {
+    console.error("[Ads] Failed to create rewarded ad:", error);
   }
-
-  if (IS_TEST_MODE) {
-    console.log("[Ads] Showing mock interstitial...");
-    // Simulate ad display time
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    console.log("[Ads] Mock interstitial closed");
-    interstitialReady = false;
-    // Reload for next time
-    loadMockInterstitial();
-    return true;
-  }
-
-  // Production interstitial would be shown here
-  return false;
 }
 
 /**
@@ -99,37 +159,23 @@ export async function showInterstitialAd(): Promise<boolean> {
  * @returns true if ad was shown, false if not ready
  */
 export async function showRewardedAd(onReward?: () => void): Promise<boolean> {
-  if (!isInitialized || !rewardedReady) {
+  if (!isInitialized || !rewardedReady || !rewardedAd) {
     console.log("[Ads] Rewarded ad not ready");
     return false;
   }
 
-  if (IS_TEST_MODE) {
-    console.log("[Ads] Showing mock rewarded ad...");
-    // Simulate ad watch time
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-    console.log("[Ads] Mock rewarded ad completed - granting reward");
+  try {
+    // Store the callback
+    rewardCallback = onReward || null;
 
-    // Call reward callback
-    if (onReward) {
-      onReward();
-    }
-
-    rewardedReady = false;
-    // Reload for next time
-    loadMockRewarded();
+    // Show the ad
+    await rewardedAd.show();
     return true;
+  } catch (error) {
+    console.error("[Ads] Failed to show rewarded ad:", error);
+    rewardCallback = null;
+    return false;
   }
-
-  // Production rewarded ad would be shown here
-  return false;
-}
-
-/**
- * Check if interstitial is ready to show
- */
-export function isInterstitialReady(): boolean {
-  return interstitialReady;
 }
 
 /**
@@ -139,16 +185,30 @@ export function isRewardedReady(): boolean {
   return rewardedReady;
 }
 
-/**
- * Create ad managers (call after initialization)
- */
-export function createAdManagers(): void {
-  if (!isInitialized) {
-    console.warn("[Ads] Cannot create managers before initialization");
-    return;
-  }
-  // In test mode, ads are already being loaded
+// ================================================
+// LEGACY API (for backwards compatibility)
+// ================================================
+
+// These are kept for backwards compatibility but are no longer used
+let interstitialReady = false;
+
+export async function showInterstitialAd(): Promise<boolean> {
+  // Interstitial ads are not used in this app
+  console.log("[Ads] Interstitial ads not implemented");
+  return false;
 }
+
+export function isInterstitialReady(): boolean {
+  return interstitialReady;
+}
+
+export function createAdManagers(): void {
+  // No-op - ads are loaded automatically after initialization
+}
+
+// ================================================
+// EXPORTS
+// ================================================
 
 /**
  * Ad Manager singleton export
@@ -161,7 +221,7 @@ export const AdManager = {
   isInterstitialReady,
   isRewardedReady,
   isTestMode: IS_TEST_MODE,
-  appId: "ca-app-pub-6258470133022211~6887279803",
+  appId: APP_ID,
 };
 
 export default AdManager;

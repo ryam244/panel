@@ -217,4 +217,19 @@ export const en = {
     getBonus: "Get Bonus",
     noThanks: "No Thanks",
   },
+
+  // Play Limit
+  playLimit: {
+    title: "Daily Plays",
+    remaining: "{{count}} plays left",
+    exhausted: "You've used all your plays for today",
+    watchAdTitle: "Watch Ad to Play",
+    watchAdDesc: "Watch an ad to get {{count}} more plays",
+    watchButton: "Watch Ad (+{{count}} plays)",
+    loading: "Loading ad...",
+    thankYou: "Thank you!",
+    playsAdded: "+{{count}} plays added",
+    comeBackTomorrow: "Come back tomorrow!",
+    unlimited: "Unlimited",
+  },
 };

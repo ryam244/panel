@@ -8,6 +8,20 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { GameMode, Difficulty, UserSettings, UserStats, HighScores } from "../types";
 
+// Play limit configuration
+export const PLAY_LIMIT_CONFIG = {
+  DAILY_FREE_PLAYS: 10, // 1日10回まで無料
+  REWARD_BONUS_PLAYS: 5, // リワード広告で+5回
+} as const;
+
+// Play limit state
+export interface PlayLimitState {
+  date: string; // YYYY-MM-DD format
+  playsRemaining: number;
+  totalPlaysToday: number;
+  adsWatchedToday: number;
+}
+
 // Game History Entry
 export interface GameHistoryEntry {
   id: string;
@@ -67,6 +81,14 @@ export interface AppStore {
   modeStats: Record<string, { gamesPlayed: number; totalTime: number; perfectGames: number }>;
   updateModeStats: (mode: GameMode, difficulty: Difficulty, time: number, isPerfect: boolean) => void;
 
+  // Play Limit (Reward Ads)
+  playLimit: PlayLimitState;
+  canPlay: () => boolean;
+  consumePlay: () => boolean;
+  addBonusPlays: () => void;
+  getPlaysRemaining: () => number;
+  resetPlayLimitIfNewDay: () => void;
+
   // Hydration
   _hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
@@ -88,6 +110,18 @@ const defaultStats: UserStats = {
 };
 
 const defaultHighScores: HighScores = {};
+
+// Default play limit
+const getTodayDateString = (): string => {
+  return new Date().toISOString().slice(0, 10);
+};
+
+const defaultPlayLimit: PlayLimitState = {
+  date: getTodayDateString(),
+  playsRemaining: PLAY_LIMIT_CONFIG.DAILY_FREE_PLAYS,
+  totalPlaysToday: 0,
+  adsWatchedToday: 0,
+};
 
 // Achievement IDs
 export const ACHIEVEMENT_IDS = {
@@ -341,6 +375,100 @@ export const useStore = create<AppStore>()(
             },
           };
         }),
+
+      // ===================
+      // PLAY LIMIT (Reward Ads)
+      // ===================
+      playLimit: defaultPlayLimit,
+
+      resetPlayLimitIfNewDay: () =>
+        set((state) => {
+          const today = getTodayDateString();
+          if (state.playLimit.date !== today) {
+            return {
+              playLimit: {
+                date: today,
+                playsRemaining: PLAY_LIMIT_CONFIG.DAILY_FREE_PLAYS,
+                totalPlaysToday: 0,
+                adsWatchedToday: 0,
+              },
+            };
+          }
+          return state;
+        }),
+
+      canPlay: () => {
+        const state = get();
+        const today = getTodayDateString();
+        // If it's a new day, reset and return true
+        if (state.playLimit.date !== today) {
+          return true;
+        }
+        return state.playLimit.playsRemaining > 0;
+      },
+
+      consumePlay: () => {
+        const state = get();
+        const today = getTodayDateString();
+
+        // Reset if new day
+        if (state.playLimit.date !== today) {
+          set({
+            playLimit: {
+              date: today,
+              playsRemaining: PLAY_LIMIT_CONFIG.DAILY_FREE_PLAYS - 1,
+              totalPlaysToday: 1,
+              adsWatchedToday: 0,
+            },
+          });
+          return true;
+        }
+
+        if (state.playLimit.playsRemaining <= 0) {
+          return false;
+        }
+
+        set({
+          playLimit: {
+            ...state.playLimit,
+            playsRemaining: state.playLimit.playsRemaining - 1,
+            totalPlaysToday: state.playLimit.totalPlaysToday + 1,
+          },
+        });
+        return true;
+      },
+
+      addBonusPlays: () =>
+        set((state) => {
+          const today = getTodayDateString();
+          // Reset if new day
+          if (state.playLimit.date !== today) {
+            return {
+              playLimit: {
+                date: today,
+                playsRemaining: PLAY_LIMIT_CONFIG.DAILY_FREE_PLAYS + PLAY_LIMIT_CONFIG.REWARD_BONUS_PLAYS,
+                totalPlaysToday: 0,
+                adsWatchedToday: 1,
+              },
+            };
+          }
+          return {
+            playLimit: {
+              ...state.playLimit,
+              playsRemaining: state.playLimit.playsRemaining + PLAY_LIMIT_CONFIG.REWARD_BONUS_PLAYS,
+              adsWatchedToday: state.playLimit.adsWatchedToday + 1,
+            },
+          };
+        }),
+
+      getPlaysRemaining: () => {
+        const state = get();
+        const today = getTodayDateString();
+        if (state.playLimit.date !== today) {
+          return PLAY_LIMIT_CONFIG.DAILY_FREE_PLAYS;
+        }
+        return state.playLimit.playsRemaining;
+      },
 
       // ===================
       // HYDRATION

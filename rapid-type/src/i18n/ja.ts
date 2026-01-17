@@ -217,4 +217,19 @@ export const ja = {
     getBonus: "ボーナスをもらう",
     noThanks: "今はいい",
   },
+
+  // Play Limit
+  playLimit: {
+    title: "本日のプレイ回数",
+    remaining: "残り{{count}}回",
+    exhausted: "本日のプレイ回数を使い切りました",
+    watchAdTitle: "広告を見てプレイ",
+    watchAdDesc: "広告を視聴すると{{count}}回プレイできます",
+    watchButton: "広告を見る (+{{count}}回)",
+    loading: "広告を読み込み中...",
+    thankYou: "ありがとうございます！",
+    playsAdded: "+{{count}}回プレイ可能になりました",
+    comeBackTomorrow: "明日また遊びに来てね！",
+    unlimited: "無制限",
+  },
 };

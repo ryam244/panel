@@ -7,10 +7,11 @@ import { useState, useEffect } from "react";
 import { View, Text, Pressable, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { useStore } from "../src/store";
+import { useStore, PLAY_LIMIT_CONFIG } from "../src/store";
 import { useSounds } from "../src/hooks";
 import { Colors, ModeInfo, DifficultyInfo } from "../src/constants";
 import { t, isJapanese } from "../src/i18n";
+import { PlayLimitModal } from "../src/components/overlays";
 import type { GameMode, Difficulty } from "../src/types";
 
 // Icon component
@@ -268,16 +269,36 @@ const DarkModeToggle = () => {
 export default function HomeScreen() {
   const [selectedMode, setSelectedMode] = useState<GameMode>("NUMBERS");
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>("NORMAL");
+  const [showPlayLimitModal, setShowPlayLimitModal] = useState(false);
+
   const isDarkMode = useStore((state) => state.settings.isDarkMode);
+  const canPlay = useStore((state) => state.canPlay);
+  const consumePlay = useStore((state) => state.consumePlay);
+  const getPlaysRemaining = useStore((state) => state.getPlaysRemaining);
+  const resetPlayLimitIfNewDay = useStore((state) => state.resetPlayLimitIfNewDay);
   const sounds = useSounds();
 
-  // Preload sounds on app start
+  // Preload sounds on app start and reset play limit if new day
   useEffect(() => {
     sounds.preload();
+    resetPlayLimitIfNewDay();
   }, []);
+
+  // Get current plays remaining
+  const playsRemaining = getPlaysRemaining();
 
   const handleStartGame = () => {
     sounds.playButtonTap();
+
+    // Check if user can play
+    if (!canPlay()) {
+      setShowPlayLimitModal(true);
+      return;
+    }
+
+    // Consume a play
+    consumePlay();
+
     router.push({
       pathname: "/game/[mode]",
       params: {
@@ -285,6 +306,11 @@ export default function HomeScreen() {
         difficulty: selectedDifficulty,
       },
     });
+  };
+
+  const handlePlaysAdded = () => {
+    // After watching ad and getting bonus plays, user can now play
+    // Modal will close automatically, user can tap start again
   };
 
   // MVP: Show 4 modes (including Find Number)
@@ -421,22 +447,62 @@ export default function HomeScreen() {
 
       {/* Footer Actions */}
       <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>
+        {/* Plays Remaining Indicator */}
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            marginBottom: 12,
+            gap: 8,
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: isDarkMode
+                ? "rgba(255, 255, 255, 0.1)"
+                : Colors.primary.default + "15",
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderRadius: 20,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <Text style={{ fontSize: 14 }}>🎮</Text>
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: "700",
+                color: playsRemaining > 0
+                  ? (isDarkMode ? Colors.text.dark : Colors.primary.default)
+                  : Colors.semantic.error,
+              }}
+            >
+              {t("playLimit.remaining").replace("{{count}}", String(playsRemaining))}
+            </Text>
+          </View>
+        </View>
+
         {/* Start Button */}
         <Pressable
           onPress={handleStartGame}
           style={{
-            backgroundColor: Colors.primary.default,
+            backgroundColor: playsRemaining > 0
+              ? Colors.primary.default
+              : Colors.text.muted,
             height: 60,
             borderRadius: 16,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
             gap: 8,
-            shadowColor: Colors.primary.default,
+            shadowColor: playsRemaining > 0 ? Colors.primary.default : "transparent",
             shadowOffset: { width: 0, height: 8 },
             shadowOpacity: 0.3,
             shadowRadius: 16,
-            elevation: 8,
+            elevation: playsRemaining > 0 ? 8 : 0,
           }}
         >
           <Text
@@ -447,7 +513,7 @@ export default function HomeScreen() {
               letterSpacing: 1,
             }}
           >
-            {t("home.startGame")}
+            {playsRemaining > 0 ? t("home.startGame") : t("playLimit.watchAdTitle")}
           </Text>
         </Pressable>
 
@@ -498,6 +564,14 @@ export default function HomeScreen() {
           ))}
         </View>
       </View>
+
+      {/* Play Limit Modal */}
+      <PlayLimitModal
+        visible={showPlayLimitModal}
+        onClose={() => setShowPlayLimitModal(false)}
+        onPlaysAdded={handlePlaysAdded}
+        isDarkMode={isDarkMode}
+      />
     </SafeAreaView>
   );
 }

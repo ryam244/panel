@@ -33,6 +33,8 @@ export const Colors = {
     game: "#1E2A38",
     // Game background (sentence/japanese)
     gameSentence: "#F2F0E9",
+    // Dark mode panel
+    darkPanel: "#2A3441",
   },
 
   // ===================
