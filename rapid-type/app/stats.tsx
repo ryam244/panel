@@ -101,8 +101,13 @@ const HistoryItem = ({
 
   return (
     <View
-     
       style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 12,
+        marginBottom: 8,
+        borderRadius: 12,
         backgroundColor: isDarkMode
           ? "rgba(255, 255, 255, 0.05)"
           : Colors.background.panel,
@@ -112,43 +117,65 @@ const HistoryItem = ({
           : Colors.border.ui,
       }}
     >
-      <View>
+      <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
         <View
-         
-          style={{ backgroundColor: getRankColor(entry.rank) + "20" }}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            justifyContent: "center",
+            alignItems: "center",
+            marginRight: 12,
+            backgroundColor: getRankColor(entry.rank) + "20",
+          }}
         >
           <Text
-           
-            style={{ color: getRankColor(entry.rank) }}
+            style={{
+              fontSize: 16,
+              fontWeight: "700",
+              color: getRankColor(entry.rank),
+            }}
           >
             {entry.rank}
           </Text>
         </View>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text
-           
-            style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
+            style={{
+              fontSize: 14,
+              fontWeight: "600",
+              marginBottom: 2,
+              color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+            }}
           >
             {getModeLabel(entry.mode)}
           </Text>
           <Text
-           
-            style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
+            style={{
+              fontSize: 11,
+              color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
+            }}
           >
             {getDifficultyLabel(entry.difficulty)} · {dateStr}
           </Text>
         </View>
       </View>
-      <View>
+      <View style={{ alignItems: "flex-end" }}>
         <Text
-         
-          style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
+          style={{
+            fontSize: 16,
+            fontWeight: "700",
+            marginBottom: 2,
+            color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+          }}
         >
           {formatTime(entry.clearTime)}
         </Text>
         <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
+          style={{
+            fontSize: 11,
+            color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
+          }}
         >
           {entry.accuracy.toFixed(1)}%
         </Text>
@@ -171,8 +198,11 @@ const StatCard = ({
 }) => {
   return (
     <View
-     
       style={{
+        flex: 1,
+        padding: 16,
+        marginHorizontal: 4,
+        borderRadius: 12,
         backgroundColor: isDarkMode
           ? "rgba(255, 255, 255, 0.05)"
           : Colors.background.panel,
@@ -183,21 +213,33 @@ const StatCard = ({
       }}
     >
       <Text
-       
-        style={{ color: Colors.text.muted }}
+        style={{
+          fontSize: 11,
+          fontWeight: "600",
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+          marginBottom: 8,
+          color: Colors.text.muted,
+        }}
       >
         {label}
       </Text>
       <Text
-       
-        style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
+        style={{
+          fontSize: 20,
+          fontWeight: "700",
+          color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+        }}
       >
         {value}
       </Text>
       {subValue && (
         <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
+          style={{
+            fontSize: 12,
+            marginTop: 4,
+            color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
+          }}
         >
           {subValue}
         </Text>
@@ -220,8 +262,13 @@ const BestTimeCard = ({
 }) => {
   return (
     <View
-     
       style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 16,
+        marginBottom: 8,
+        borderRadius: 12,
         backgroundColor: isDarkMode
           ? "rgba(255, 255, 255, 0.05)"
           : Colors.background.panel,
@@ -231,23 +278,32 @@ const BestTimeCard = ({
           : Colors.border.ui,
       }}
     >
-      <View>
+      <View style={{ flex: 1 }}>
         <Text
-         
-          style={{ color: isDarkMode ? Colors.text.dark : Colors.text.primary }}
+          style={{
+            fontSize: 16,
+            fontWeight: "600",
+            marginBottom: 4,
+            color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+          }}
         >
           {getModeLabel(mode)}
         </Text>
         <Text
-         
-          style={{ color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted }}
+          style={{
+            fontSize: 12,
+            color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
+          }}
         >
           {getDifficultyLabel(difficulty)}
         </Text>
       </View>
       <Text
-       
-        style={{ color: Colors.primary.default }}
+        style={{
+          fontSize: 20,
+          fontWeight: "700",
+          color: Colors.primary.default,
+        }}
       >
         {formatTime(time)}
       </Text>

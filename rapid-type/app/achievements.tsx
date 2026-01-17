@@ -94,14 +94,15 @@ const getAchievementDefs = (isDarkMode: boolean): AchievementDef[] => {
     {
       id: ACHIEVEMENT_IDS.FIND_MASTER,
       icon: <Trophy size={iconSize} color={iconColor} />,
-      title: "Find Master",
-      description: "Clear Find Number Hard mode",
+      title: t("achievements.findMaster"),
+      description: t("achievements.findMasterDesc"),
     },
     {
       id: ACHIEVEMENT_IDS.SPEED_KING,
       icon: <Zap size={iconSize} color={iconColor} />,
-      title: "Speed King",
-      description: "Get S rank 10 times",
+      title: t("achievements.speedKing"),
+      description: t("achievements.speedKingDesc"),
+      hasProgress: true,
     },
   ];
 };

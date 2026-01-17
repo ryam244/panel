@@ -429,7 +429,8 @@ export default function GameScreen() {
   const getBackgroundColor = () => {
     if (mode === "SENTENCE") return Colors.background.gameSentence;
     if (isDarkMode) return Colors.background.dark;
-    return Colors.background.game;
+    // ライトモードでは文章モードと同じ明るい背景を使用
+    return Colors.background.gameSentence;
   };
 
   // Total time with penalty
@@ -486,7 +487,7 @@ export default function GameScreen() {
           timeMs={displayTime}
           isRunning={isRunning}
           hasError={timerHasError}
-          isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
+          isDarkMode={isDarkMode}
         />
 
         <Pressable
@@ -522,7 +523,7 @@ export default function GameScreen() {
             currentTarget={currentTarget?.value || ""}
             sentence={session.targetSentence}
             currentIndex={session.currentTargetIndex}
-            isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
+            isDarkMode={isDarkMode}
           />
         </View>
 
@@ -536,7 +537,7 @@ export default function GameScreen() {
           mode={mode}
           errorTileId={errorTileId}
           correctTileId={correctTileId}
-          isDarkMode={mode === "SENTENCE" ? false : isDarkMode}
+          isDarkMode={isDarkMode}
         />
 
         {/* Stats Panel */}

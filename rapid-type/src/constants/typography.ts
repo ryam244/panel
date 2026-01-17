@@ -86,11 +86,11 @@ export const LetterSpacing = {
 
 // Pre-defined text styles for consistency
 export const TextStyles = {
-  // Timer display - large, clear, monospace
+  // Timer display - large, clear, monospace (視認性向上のため大きめに)
   timer: {
     fontFamily: FontFamily.mono,
-    fontSize: FontSize["3xl"],
-    fontWeight: FontWeight.extrabold,
+    fontSize: FontSize["4xl"],
+    fontWeight: FontWeight.black,
     letterSpacing: LetterSpacing.tight,
   },
 

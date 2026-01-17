@@ -171,6 +171,10 @@ export const ja = {
     sentenceMasterDesc: "文章モードを50回クリア",
     noMistake: "ノーミス",
     noMistakeDesc: "ミスなしで10回クリア",
+    findMaster: "探索マスター",
+    findMasterDesc: "数字探しモード・難しいをクリア",
+    speedKing: "スピードキング",
+    speedKingDesc: "Sランクを10回獲得",
   },
 
   // Tutorial
