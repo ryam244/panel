@@ -33,10 +33,9 @@ const AD_UNIT_IDS = {
   test: {
     rewarded: TestIds.REWARDED,
   },
-  // Production IDs (replace before release)
+  // Production IDs
   production: {
-    // Replace this with your actual rewarded ad unit ID
-    rewarded: "ca-app-pub-6258470133022211/XXXXXXXXXX",
+    rewarded: "ca-app-pub-6258470133022211/7834966756",
   },
 };
 
