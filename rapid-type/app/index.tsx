@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect } from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useStore } from "../src/store";
@@ -13,30 +13,7 @@ import { Colors, ModeInfo, DifficultyInfo } from "../src/constants";
 import { t, isJapanese } from "../src/i18n";
 import type { GameMode, Difficulty } from "../src/types";
 
-// Icon component
-const ModeIcon = ({ mode, isSelected }: { mode: GameMode; isSelected: boolean }) => {
-  const icons: Record<GameMode, string> = {
-    NUMBERS: "123",
-    ALPHABET: "ABC",
-    SENTENCE: "文",
-    FIND_NUMBER: "🔍",
-    FLASH: "⚡",
-  };
-
-  return (
-    <Text
-      style={{
-        fontSize: 18,
-        fontWeight: "800",
-        color: isSelected ? "#fff" : Colors.primary.default,
-      }}
-    >
-      {icons[mode]}
-    </Text>
-  );
-};
-
-// Mode Card Component
+// Mode Card Component - Compact 2-column layout
 const ModeCard = ({
   mode,
   isSelected,
@@ -46,7 +23,6 @@ const ModeCard = ({
   isSelected: boolean;
   onPress: () => void;
 }) => {
-  const info = ModeInfo[mode];
   const isDarkMode = useStore((state) => state.settings.isDarkMode);
 
   // Get localized mode name
@@ -62,88 +38,62 @@ const ModeCard = ({
     <Pressable
       onPress={onPress}
       style={{
-        flexDirection: "row",
+        flex: 1,
         alignItems: "center",
-        justifyContent: "space-between",
-        padding: 20,
-        borderRadius: 16,
+        justifyContent: "center",
+        paddingVertical: 16,
+        paddingHorizontal: 8,
+        borderRadius: 14,
         backgroundColor: isSelected
-          ? Colors.primary.default + "20"
+          ? Colors.primary.default
           : isDarkMode
             ? "rgba(255, 255, 255, 0.05)"
             : Colors.background.panel,
-        borderWidth: isSelected ? 2 : 1,
-        borderColor: isSelected
-          ? Colors.primary.default
-          : isDarkMode
-            ? "rgba(255, 255, 255, 0.1)"
-            : Colors.border.primary,
-        shadowColor: isSelected ? Colors.primary.default : "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: isSelected ? 0.2 : 0.05,
-        shadowRadius: 4,
-        elevation: isSelected ? 4 : 1,
+        borderWidth: isSelected ? 0 : 1,
+        borderColor: isDarkMode
+          ? "rgba(255, 255, 255, 0.1)"
+          : Colors.border.primary,
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-        <View
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: isSelected
-              ? Colors.primary.default
-              : isDarkMode
-                ? "rgba(255, 255, 255, 0.1)"
-                : "#fff",
-          }}
-        >
-          <ModeIcon mode={mode} isSelected={isSelected} />
-        </View>
+      <View
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 10,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: isSelected
+            ? "rgba(255, 255, 255, 0.2)"
+            : isDarkMode
+              ? "rgba(255, 255, 255, 0.1)"
+              : Colors.primary.default + "15",
+          marginBottom: 8,
+        }}
+      >
         <Text
           style={{
-            fontSize: 18,
-            fontWeight: "700",
-            color: isDarkMode ? Colors.text.dark : Colors.text.primary,
+            fontSize: 16,
+            fontWeight: "800",
+            color: isSelected ? "#fff" : Colors.primary.default,
           }}
         >
-          {modeNames[mode]}
+          {mode === "NUMBERS" ? "123" : mode === "ALPHABET" ? "ABC" : mode === "SENTENCE" ? "文" : "🔍"}
         </Text>
       </View>
-
-      {isSelected ? (
-        <View
-          style={{
-            backgroundColor: Colors.primary.default,
-            paddingHorizontal: 10,
-            paddingVertical: 4,
-            borderRadius: 12,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 10,
-              color: "#fff",
-              fontWeight: "700",
-              textTransform: "uppercase",
-              letterSpacing: 1,
-            }}
-          >
-            {t("home.active")}
-          </Text>
-        </View>
-      ) : (
-        <Text
-          style={{
-            fontSize: 24,
-            color: isDarkMode ? "rgba(255,255,255,0.3)" : Colors.text.muted,
-          }}
-        >
-          {">"}
-        </Text>
-      )}
+      <Text
+        style={{
+          fontSize: 13,
+          fontWeight: "700",
+          color: isSelected
+            ? "#fff"
+            : isDarkMode
+              ? Colors.text.dark
+              : Colors.text.primary,
+          textAlign: "center",
+        }}
+      >
+        {modeNames[mode]}
+      </Text>
     </Pressable>
   );
 };
@@ -306,43 +256,40 @@ export default function HomeScreen() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "flex-end",
-          paddingHorizontal: 24,
-          paddingTop: 16,
+          paddingHorizontal: 20,
+          paddingTop: 8,
         }}
       >
         <DarkModeToggle />
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingBottom: 24 }}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Title Section */}
-        <View style={{ alignItems: "center", marginTop: 32, marginBottom: 40 }}>
+      {/* Main Content - No Scroll */}
+      <View style={{ flex: 1, paddingHorizontal: 20 }}>
+        {/* Title Section - Compact */}
+        <View style={{ alignItems: "center", marginTop: 16, marginBottom: 24 }}>
           <View
             style={{
-              width: 80,
-              height: 80,
+              width: 60,
+              height: 60,
               backgroundColor: Colors.primary.default,
-              borderRadius: 20,
+              borderRadius: 16,
               alignItems: "center",
               justifyContent: "center",
-              marginBottom: 16,
+              marginBottom: 12,
               shadowColor: Colors.primary.default,
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.3,
-              shadowRadius: 16,
-              elevation: 8,
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.25,
+              shadowRadius: 8,
+              elevation: 6,
             }}
           >
-            <Text style={{ color: "#fff", fontSize: 36, fontWeight: "900" }}>
+            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "900" }}>
               M
             </Text>
           </View>
           <Text
             style={{
-              fontSize: 48,
+              fontSize: 36,
               fontWeight: "900",
               letterSpacing: -1,
               color: isDarkMode ? Colors.text.dark : Colors.text.primary,
@@ -355,58 +302,70 @@ export default function HomeScreen() {
               color: Colors.primary.default,
               fontWeight: "600",
               letterSpacing: 2,
-              fontSize: 11,
+              fontSize: 10,
               textTransform: "uppercase",
-              marginTop: 8,
+              marginTop: 4,
             }}
           >
             {t("app.tagline")}
           </Text>
         </View>
 
-        {/* Mode Selection */}
-        <View style={{ marginBottom: 32 }}>
+        {/* Mode Selection - 2x2 Grid */}
+        <View style={{ marginBottom: 20 }}>
           <Text
             style={{
               textAlign: "center",
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: "700",
               letterSpacing: 2,
               textTransform: "uppercase",
-              marginBottom: 16,
+              marginBottom: 12,
               color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
             }}
           >
             {t("home.selectMode")}
           </Text>
-          <View style={{ gap: 16 }}>
-            {mvpModes.map((mode) => (
-              <ModeCard
-                key={mode}
-                mode={mode}
-                isSelected={selectedMode === mode}
-                onPress={() => setSelectedMode(mode)}
-              />
-            ))}
+          <View style={{ gap: 10 }}>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              {mvpModes.slice(0, 2).map((mode) => (
+                <ModeCard
+                  key={mode}
+                  mode={mode}
+                  isSelected={selectedMode === mode}
+                  onPress={() => setSelectedMode(mode)}
+                />
+              ))}
+            </View>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              {mvpModes.slice(2, 4).map((mode) => (
+                <ModeCard
+                  key={mode}
+                  mode={mode}
+                  isSelected={selectedMode === mode}
+                  onPress={() => setSelectedMode(mode)}
+                />
+              ))}
+            </View>
           </View>
         </View>
 
         {/* Difficulty Selection */}
-        <View style={{ marginBottom: 32 }}>
+        <View style={{ marginBottom: 20 }}>
           <Text
             style={{
               textAlign: "center",
-              fontSize: 11,
+              fontSize: 10,
               fontWeight: "700",
               letterSpacing: 2,
               textTransform: "uppercase",
-              marginBottom: 16,
+              marginBottom: 12,
               color: isDarkMode ? Colors.text.darkSecondary : Colors.text.muted,
             }}
           >
             {t("home.difficulty")}
           </Text>
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
             {(["EASY", "NORMAL", "HARD"] as Difficulty[]).map((diff) => (
               <DifficultyButton
                 key={diff}
@@ -417,7 +376,7 @@ export default function HomeScreen() {
             ))}
           </View>
         </View>
-      </ScrollView>
+      </View>
 
       {/* Footer Actions */}
       <View style={{ paddingHorizontal: 24, paddingBottom: 32 }}>

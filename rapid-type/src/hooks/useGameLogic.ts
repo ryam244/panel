@@ -46,11 +46,19 @@ export function useGameLogic(
   }, [session.tiles, session.currentTargetIndex]);
 
   // Check if tile is correct
+  // For SENTENCE mode: allow tapping any tile with the same character as the current target
   const isCorrect = useCallback(
     (tile: Tile): boolean => {
+      if (mode === "SENTENCE") {
+        // Get the current target character
+        const targetTile = session.tiles.find((t) => t.orderIndex === session.currentTargetIndex);
+        if (!targetTile) return false;
+        // Allow any uncleared tile with the same value
+        return !tile.isCleared && tile.value === targetTile.value;
+      }
       return tile.orderIndex === session.currentTargetIndex;
     },
-    [session.currentTargetIndex]
+    [mode, session.tiles, session.currentTargetIndex]
   );
 
   // Handle tile press
@@ -63,8 +71,15 @@ export function useGameLogic(
         tapCorrect();
 
         const timestamp = lap();
+
+        // For SENTENCE mode: always clear the tile with the current orderIndex
+        // This ensures tiles are cleared in the correct order even if user taps a duplicate
+        const tileIdToClear = mode === "SENTENCE"
+          ? session.tiles.find((t) => t.orderIndex === session.currentTargetIndex)?.id || tile.id
+          : tile.id;
+
         const newTiles = session.tiles.map((t) =>
-          t.id === tile.id ? { ...t, isCleared: true } : t
+          t.id === tileIdToClear ? { ...t, isCleared: true } : t
         );
 
         const nextIndex = session.currentTargetIndex + 1;
