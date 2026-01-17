@@ -32,6 +32,11 @@ export const GridConfigs: Record<GameMode, Record<Difficulty, GridConfig>> = {
     NORMAL: { rows: 4, cols: 4, totalTiles: 16 },
     HARD: { rows: 5, cols: 5, totalTiles: 25 },
   },
+  ENDLESS: {
+    EASY: { rows: 4, cols: 4, totalTiles: 16 },
+    NORMAL: { rows: 5, cols: 5, totalTiles: 25 },
+    HARD: { rows: 5, cols: 5, totalTiles: 25 },
+  },
 };
 
 // Rank thresholds (in milliseconds per tile)
@@ -61,6 +66,11 @@ export const RankThresholds = {
     EASY: { S: 350, A: 450, B: 550 },
     NORMAL: { S: 300, A: 400, B: 500 },
     HARD: { S: 250, A: 350, B: 450 },
+  },
+  ENDLESS: {
+    EASY: { S: 400, A: 600, B: 800 },
+    NORMAL: { S: 350, A: 550, B: 750 },
+    HARD: { S: 300, A: 500, B: 700 },
   },
 };
 
@@ -117,6 +127,11 @@ export const ModeInfo: Record<GameMode, {
     title: "Flash",
     icon: "flash_on",
     description: "Tap the flashing panel",
+  },
+  ENDLESS: {
+    title: "Endless",
+    icon: "infinity",
+    description: "No mistakes allowed",
   },
 };
 

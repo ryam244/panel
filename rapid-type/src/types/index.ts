@@ -11,7 +11,8 @@ export type GameMode =
   | "FIND_NUMBER"  // 数字探し (target search)
   | "ALPHABET"     // アルファベット順押し (A→Z)
   | "SENTENCE"     // 日本語文章
-  | "FLASH";       // 光るパネル
+  | "FLASH"        // 光るパネル
+  | "ENDLESS";     // エンドレスモード（ミスするまで続く）
 
 export type Difficulty = "EASY" | "NORMAL" | "HARD";
 
@@ -83,6 +84,20 @@ export interface GameResult {
   tapsPerSecond: number;       // Average TPS
   tapIntervals: number[];      // Time between taps
   date: string;                // ISO date string
+}
+
+// エンドレスモード結果
+export interface EndlessResult {
+  sessionId: string;
+  totalTaps: number;           // 総タップ数
+  totalTimeMs: number;         // 総経過時間
+  roundsCompleted: number;     // 完了ラウンド数
+  mentalAge: number;           // 精神年齢
+  iqScore: number;             // IQスコア
+  tapsPerSecond: number;       // 平均TPS
+  date: string;                // ISO date string
+  isNewRecord: boolean;
+  previousRecord?: number;     // 前回の最高タップ数
 }
 
 // ===================

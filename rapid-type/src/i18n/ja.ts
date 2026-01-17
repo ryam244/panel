@@ -33,6 +33,22 @@ export const ja = {
     findNumberDesc: "ターゲットを見つけてタップ",
     flash: "フラッシュ",
     flashDesc: "光ったらタップ",
+    endless: "エンドレス",
+    endlessDesc: "ミスするまで続く",
+  },
+
+  // Endless Mode
+  endless: {
+    title: "エンドレスモード",
+    subtitle: "ミスするまで続くチャレンジ",
+    totalTaps: "総タップ数",
+    rounds: "ラウンド",
+    mentalAge: "精神年齢",
+    iqScore: "IQスコア",
+    gameOver: "ゲームオーバー",
+    newRecord: "新記録！",
+    result: "結果",
+    yearsOld: "歳",
   },
 
   // Difficulty

@@ -112,3 +112,104 @@ export function formatTimeDiff(diffMs: number): string {
   const seconds = (absMs / 1000).toFixed(2);
   return `${sign}${seconds}s`;
 }
+
+// ===================
+// ENDLESS MODE CALCULATIONS
+// ===================
+
+/**
+ * Calculate mental age based on taps and time
+ * Higher TPS = higher mental age
+ */
+export function calculateMentalAge(totalTaps: number, totalTimeMs: number): number {
+  if (totalTaps === 0 || totalTimeMs === 0) return 0;
+
+  const tps = (totalTaps / totalTimeMs) * 1000;
+
+  // Endurance bonus (up to +10 years)
+  const enduranceBonus = Math.min(10, Math.floor(totalTaps / 50));
+
+  let age: number;
+  if (tps < 1.0) {
+    age = Math.max(5, Math.floor(tps * 10));
+  } else if (tps < 2.0) {
+    age = 10 + Math.floor((tps - 1.0) * 10);
+  } else if (tps < 3.0) {
+    age = 20 + Math.floor((tps - 2.0) * 15);
+  } else if (tps < 4.0) {
+    age = 35 + Math.floor((tps - 3.0) * 15);
+  } else {
+    age = 50 + Math.floor((tps - 4.0) * 10);
+  }
+
+  return Math.min(99, age + enduranceBonus);
+}
+
+/**
+ * Calculate IQ score based on taps and time
+ */
+export function calculateIQ(totalTaps: number, totalTimeMs: number): number {
+  if (totalTaps === 0 || totalTimeMs === 0) return 0;
+
+  const tps = (totalTaps / totalTimeMs) * 1000;
+
+  // Endurance bonus (up to +20 IQ)
+  const enduranceBonus = Math.min(20, Math.floor(totalTaps / 25));
+
+  let iq: number;
+  if (tps < 1.0) {
+    iq = 60 + Math.floor(tps * 20);
+  } else if (tps < 2.0) {
+    iq = 80 + Math.floor((tps - 1.0) * 20);
+  } else if (tps < 3.0) {
+    iq = 100 + Math.floor((tps - 2.0) * 20);
+  } else if (tps < 4.0) {
+    iq = 120 + Math.floor((tps - 3.0) * 20);
+  } else {
+    iq = 140 + Math.floor((tps - 4.0) * 20);
+  }
+
+  return Math.min(200, iq + enduranceBonus);
+}
+
+/**
+ * Get IQ rating description
+ */
+export function getIQRating(iq: number): string {
+  if (iq >= 160) return "天才";
+  if (iq >= 140) return "非常に優秀";
+  if (iq >= 120) return "優秀";
+  if (iq >= 110) return "平均より上";
+  if (iq >= 90) return "平均";
+  if (iq >= 80) return "平均より下";
+  return "頑張ろう";
+}
+
+/**
+ * Create endless mode result
+ */
+export function createEndlessResult(
+  sessionId: string,
+  totalTaps: number,
+  totalTimeMs: number,
+  roundsCompleted: number,
+  previousRecord: number | null
+): import("../types").EndlessResult {
+  const tps = totalTimeMs > 0 ? (totalTaps / totalTimeMs) * 1000 : 0;
+  const mentalAge = calculateMentalAge(totalTaps, totalTimeMs);
+  const iqScore = calculateIQ(totalTaps, totalTimeMs);
+  const isNewRecord = previousRecord === null || totalTaps > previousRecord;
+
+  return {
+    sessionId,
+    totalTaps,
+    totalTimeMs,
+    roundsCompleted,
+    mentalAge,
+    iqScore,
+    tapsPerSecond: Math.round(tps * 10) / 10,
+    date: new Date().toISOString(),
+    isNewRecord,
+    previousRecord: previousRecord ?? undefined,
+  };
+}
